@@ -1,0 +1,25 @@
+{
+  "caso_prueba": "ELARA-VAL-001",
+  "entrada": {
+    "canal_origen": "telegram",
+    "modo": "SIMULADO",
+    "fecha_corte_texto": "14/04/2026",
+    "instrumentos_solicitados": ["CETES", "MBONOS"],
+    "proposito": "Valuación y análisis de riesgo de un portafolio ficticio."
+  },
+  "salida_esperada": {
+    "schema_version": "1.0.0",
+    "decision": "ACEPTAR",
+    "fecha_corte_normalizada": "2026-04-14",
+    "instrumentos_solicitados": ["CETES", "MBONOS"],
+    "proposito": "Valuación y análisis de riesgo de un portafolio ficticio.",
+    "datos_faltantes": [],
+    "motivos_rechazo": [],
+    "advertencias": [],
+    "seguridad": {
+      "inyeccion_prompt_detectada": false,
+      "instrucciones_no_confiables_ignoradas": false
+    }
+  },
+  "explicacion": "La fecha es explícita y se normaliza a ISO 8601; los instrumentos, el modo y el propósito están dentro del alcance."
+}

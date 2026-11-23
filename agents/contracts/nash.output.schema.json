@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/melyzavala/yieldcurve-ai/blob/main/agents/contracts/nash.output.schema.json",
+  "title": "Salida de Nash",
+  "description": "Resultado cuantitativo trazable de la invocación de build-spot-curve en modo simulado.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["estado", "caso_id", "version_caso", "version_curva", "modo", "agente", "interpretacion", "resultado_curva", "evidencia_skill", "advertencias", "errores"],
+  "properties": {
+    "estado": {"type": "string", "enum": ["CALCULO_COMPLETADO", "CALCULO_RECHAZADO", "ERROR"]},
+    "caso_id": {"type": "string", "pattern": "^YC-[A-Z0-9]{8,32}$"},
+    "version_caso": {"type": "integer", "minimum": 1},
+    "version_curva": {"type": "string", "pattern": "^CURVA-[A-Z0-9-]{4,64}$"},
+    "modo": {"const": "SIMULADO"},
+    "agente": {"const": "Nash"},
+    "interpretacion": {"type": "object", "additionalProperties": false, "required": ["mensaje", "requiere_auditoria_humana"], "properties": {"mensaje": {"type": "string", "minLength": 1, "maxLength": 500}, "requiere_auditoria_humana": {"const": true}}},
+    "resultado_curva": {"type": ["object", "null"], "additionalProperties": false, "properties": {"instrument_count": {"type": "integer", "minimum": 1}, "max_absolute_repricing_error": {"type": "number", "minimum": 0}, "interpolation_method": {"enum": ["PCHIP_LOG_DISCOUNT_FACTOR", "EXCEL_BOOTSTRAP_182D_V1"]}, "metodologia": {"enum": ["EXCEL_BOOTSTRAP_182D_V1"]}, "pillars": {"type": "array"}, "repricing": {"type": "array"}}},
+    "evidencia_skill": {"type": "object", "additionalProperties": false, "required": ["invocation_id", "skill_path", "skill_sha256", "skill_status", "nash_instruction_sha256"], "properties": {"invocation_id": {"type": "string", "minLength": 1, "maxLength": 128}, "skill_name": {"const": "build-spot-curve"}, "skill_path": {"const": "skills/build_spot_curve/SKILL.md"}, "skill_version": {"const": "1.0.0"}, "skill_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "skill_status": {"type": "string", "enum": ["COMPLETED", "REJECTED"]}, "nash_instruction_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}},
+    "advertencias": {"type": "array", "items": {"$ref": "#/$defs/incidencia"}},
+    "errores": {"type": "array", "items": {"$ref": "#/$defs/incidencia"}}
+  },
+  "$defs": {"incidencia": {"type": "object", "additionalProperties": false, "required": ["codigo", "severidad", "mensaje"], "properties": {"codigo": {"type": "string", "pattern": "^[A-Z0-9_-]{3,64}$"}, "severidad": {"type": "string", "enum": ["INFO", "ADVERTENCIA", "ERROR", "CRITICA"]}, "mensaje": {"type": "string", "minLength": 1, "maxLength": 500}}}}
+}

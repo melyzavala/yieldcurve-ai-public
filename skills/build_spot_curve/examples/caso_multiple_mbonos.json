@@ -1,0 +1,18 @@
+{
+  "case_id": "YC-SPOT20260416",
+  "curve_version": "CURVA-SIM-004",
+  "mode": "SIMULADO",
+  "valuation_date": "2026-04-14",
+  "price_basis": "DIRTY",
+  "price_unit": "MXN_PER_100_FACE",
+  "day_count": "ACT/365F",
+  "interpolation_method": "PCHIP_LOG_DISCOUNT_FACTOR",
+  "instruments": [
+    {"instrument_id": "CETES-20260713", "instrument_type": "CETES", "maturity_date": "2026-07-13", "face_value": 100.0, "dirty_price": 98.05},
+    {"instrument_id": "CETES-20261011", "instrument_type": "CETES", "maturity_date": "2026-10-11", "face_value": 100.0, "dirty_price": 95.99},
+    {"instrument_id": "CETES-20270414", "instrument_type": "CETES", "maturity_date": "2027-04-14", "face_value": 100.0, "dirty_price": 91.76},
+    {"instrument_id": "CETES-20271014", "instrument_type": "CETES", "maturity_date": "2027-10-14", "face_value": 100.0, "dirty_price": 88.00},
+    {"instrument_id": "MBONO-SIM-20280414", "instrument_type": "MBONOS", "maturity_date": "2028-04-14", "face_value": 100.0, "dirty_price": 95.0, "coupon_rate_annual": 0.08, "coupon_frequency": 2, "coupon_dates": ["2026-10-14", "2027-04-14", "2027-10-14", "2028-04-14"]},
+    {"instrument_id": "MBONO-SIM-20281014", "instrument_type": "MBONOS", "maturity_date": "2028-10-14", "face_value": 100.0, "dirty_price": 92.0, "coupon_rate_annual": 0.07, "coupon_frequency": 2, "coupon_dates": ["2026-10-14", "2027-04-14", "2027-10-14", "2028-04-14", "2028-10-14"]}
+  ]
+}

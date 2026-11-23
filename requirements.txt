@@ -1,0 +1,13 @@
+# Entorno cuantitativo mínimo para YieldCurve AI
+# Python objetivo: 3.11
+
+numpy==2.2.6
+scipy==1.15.3
+pytest==8.3.5
+jsonschema[format]==4.26.0
+openai==3.44.0
+fastapi==0.115.12
+uvicorn==0.34.3
+httpx==0.28.1
+openpyxl==3.1.5
+matplotlib==3.9.4

@@ -1,0 +1,365 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/melyzavala/yieldcurve-ai/blob/main/agents/contracts/case.schema.json",
+  "title": "YieldCurve AI Case Contract",
+  "description": "Contrato común y extensible para el intercambio de casos en modo simulado.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contrato_version",
+    "caso_id",
+    "version_caso",
+    "fecha_corte",
+    "canal_origen",
+    "modo",
+    "estado",
+    "objetivo",
+    "agente_responsable",
+    "referencias",
+    "advertencias",
+    "errores",
+    "marcas_tiempo",
+    "trazabilidad",
+    "salidas_especializadas"
+  ],
+  "properties": {
+    "contrato_version": {
+      "const": "1.0.0"
+    },
+    "caso_id": {
+      "type": "string",
+      "pattern": "^YC-[A-Z0-9]{8,32}$"
+    },
+    "version_caso": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "version_curva": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^CURVA-[A-Z0-9-]{4,64}$"
+    },
+    "fecha_corte": {
+      "type": "string",
+      "format": "date"
+    },
+    "canal_origen": {
+      "type": "string",
+      "enum": [
+        "telegram",
+        "nova",
+        "web",
+        "api",
+        "manual"
+      ]
+    },
+    "modo": {
+      "const": "SIMULADO"
+    },
+    "estado": {
+      "type": "string",
+      "enum": [
+        "RECIBIDO",
+        "EN_VALIDACION",
+        "DATOS_VALIDOS",
+        "EN_CALCULO",
+        "DICTAMEN_PROVISIONAL",
+        "PENDIENTE_APROBACION",
+        "APROBADO",
+        "RECHAZADO",
+        "DEVUELTO_CORRECCION",
+        "DETENIDO",
+        "ERROR"
+      ]
+    },
+    "objetivo": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "agente_responsable": {
+      "type": "string",
+      "enum": [
+        "Orion",
+        "Elara",
+        "Siena",
+        "Nash",
+        "Atenea",
+        "Nova"
+      ]
+    },
+    "solicitud": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "universo_instrumentos": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "CETES",
+              "MBONOS"
+            ]
+          }
+        },
+        "proposito": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "universo_instrumentos",
+        "proposito"
+      ]
+    },
+    "referencias": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "datos",
+        "calculos",
+        "validaciones"
+      ],
+      "properties": {
+        "datos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/referencia"
+          }
+        },
+        "calculos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/referencia"
+          }
+        },
+        "validaciones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/referencia"
+          }
+        }
+      }
+    },
+    "advertencias": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/incidencia"
+      }
+    },
+    "errores": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/incidencia"
+      }
+    },
+    "marcas_tiempo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "creado_en",
+        "actualizado_en"
+      ],
+      "properties": {
+        "creado_en": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aceptado_por_elara_en": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "dictamen_provisional_en": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "actualizado_en": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "trazabilidad": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "correlation_id",
+        "traza_id",
+        "referencias_consumo"
+      ],
+      "properties": {
+        "correlation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "traza_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "referencias_consumo": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      }
+    },
+    "aprobacion_humana": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "estado"
+      ],
+      "properties": {
+        "estado": {
+          "type": "string",
+          "enum": [
+            "PENDIENTE",
+            "APROBADO",
+            "RECHAZADO",
+            "EXPIRADO",
+            "DEVUELTO"
+          ]
+        },
+        "identidad_aprobador": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "expira_en": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "resuelto_en": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "salidas_especializadas": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "elara": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "siena": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "nash": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "atenea": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "$defs": {
+    "referencia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "referencia_id",
+        "tipo",
+        "estado"
+      ],
+      "properties": {
+        "referencia_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "tipo": {
+          "type": "string",
+          "enum": [
+            "serie_banxico",
+            "muestra_ficticia",
+            "parametros_metodologicos",
+            "calculo",
+            "validacion",
+            "artefacto"
+          ]
+        },
+        "estado": {
+          "type": "string",
+          "enum": [
+            "PENDIENTE",
+            "DISPONIBLE",
+            "VALIDADO",
+            "RECHAZADO"
+          ]
+        },
+        "ubicacion": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 500
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        }
+      }
+    },
+    "incidencia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "codigo",
+        "severidad",
+        "mensaje"
+      ],
+      "properties": {
+        "codigo": {
+          "type": "string",
+          "pattern": "^[A-Z0-9_-]{3,64}$"
+        },
+        "severidad": {
+          "type": "string",
+          "enum": [
+            "INFO",
+            "ADVERTENCIA",
+            "ERROR",
+            "CRITICA"
+          ]
+        },
+        "mensaje": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    }
+  }
+}

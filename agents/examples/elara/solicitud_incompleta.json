@@ -1,0 +1,30 @@
+{
+  "caso_prueba": "ELARA-ACL-001",
+  "entrada": {
+    "canal_origen": "telegram",
+    "modo": "SIMULADO",
+    "instrumentos_solicitados": ["CETES"],
+    "proposito": "Valuación de un portafolio ficticio."
+  },
+  "salida_esperada": {
+    "schema_version": "1.0.0",
+    "decision": "SOLICITAR_ACLARACION",
+    "fecha_corte_normalizada": null,
+    "instrumentos_solicitados": ["CETES"],
+    "proposito": "Valuación de un portafolio ficticio.",
+    "datos_faltantes": ["FECHA_CORTE"],
+    "motivos_rechazo": [],
+    "advertencias": [
+      {
+        "codigo": "FECHA_CORTE_FALTANTE",
+        "severidad": "ADVERTENCIA",
+        "mensaje": "Se requiere una fecha de corte explícita y normalizable."
+      }
+    ],
+    "seguridad": {
+      "inyeccion_prompt_detectada": false,
+      "instrucciones_no_confiables_ignoradas": false
+    }
+  },
+  "explicacion": "La solicitud está dentro del alcance, pero no incluye una fecha de corte; Elara solicita aclaración sin inferirla."
+}

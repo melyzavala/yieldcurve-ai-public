@@ -1,0 +1,58 @@
+{
+  "contrato_version": "1.0.0",
+  "caso_id": "YC-DEMO20261103",
+  "version_caso": 1,
+  "version_curva": null,
+  "fecha_corte": "2026-04-14",
+  "canal_origen": "telegram",
+  "modo": "SIMULADO",
+  "estado": "EN_VALIDACION",
+  "objetivo": "Determinar la viabilidad técnica de una curva spot para un portafolio ficticio.",
+  "agente_responsable": "Elara",
+  "solicitud": {
+    "universo_instrumentos": [
+      "CETES",
+      "MBONOS"
+    ],
+    "proposito": "Valuación y análisis de riesgo de un portafolio ficticio."
+  },
+  "referencias": {
+    "datos": [
+      {
+        "referencia_id": "DATOS-DEMO-001",
+        "tipo": "muestra_ficticia",
+        "estado": "DISPONIBLE",
+        "ubicacion": "muestra_ficticia://mercado-2026-04-14",
+        "version": "1.0"
+      }
+    ],
+    "calculos": [],
+    "validaciones": []
+  },
+  "advertencias": [],
+  "errores": [],
+  "marcas_tiempo": {
+    "creado_en": "2026-11-03T13:15:00Z",
+    "aceptado_por_elara_en": null,
+    "dictamen_provisional_en": null,
+    "actualizado_en": "2026-11-03T13:15:00Z"
+  },
+  "trazabilidad": {
+    "correlation_id": "CORR-DEMO-20261103-001",
+    "traza_id": "TRAZA-DEMO-20261103-001",
+    "referencias_consumo": []
+  },
+  "aprobacion_humana": {
+    "estado": "PENDIENTE",
+    "identidad_aprobador": null,
+    "expira_en": null,
+    "resuelto_en": null
+  },
+  "salidas_especializadas": {
+    "elara": {
+      "solicitud_completa": true,
+      "dentro_del_alcance": true,
+      "requiere_aclaracion": false
+    }
+  }
+}

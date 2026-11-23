@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/melyzavala/yieldcurve-ai/blob/main/agents/contracts/elara.output.schema.json",
+  "title": "YieldCurve AI Elara Output",
+  "description": "Salida de admisión de Elara compatible con salidas_especializadas.elara.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision",
+    "fecha_corte_normalizada",
+    "instrumentos_solicitados",
+    "proposito",
+    "datos_faltantes",
+    "motivos_rechazo",
+    "advertencias",
+    "seguridad"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["ACEPTAR", "RECHAZAR", "SOLICITAR_ACLARACION"]
+    },
+    "fecha_corte_normalizada": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "instrumentos_solicitados": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["CETES", "MBONOS"]
+      }
+    },
+    "proposito": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "datos_faltantes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["FECHA_CORTE", "INSTRUMENTOS", "PROPOSITO"]
+      }
+    },
+    "motivos_rechazo": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/incidencia"}
+    },
+    "advertencias": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/incidencia"}
+    },
+    "seguridad": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inyeccion_prompt_detectada", "instrucciones_no_confiables_ignoradas"],
+      "properties": {
+        "inyeccion_prompt_detectada": {"type": "boolean"},
+        "instrucciones_no_confiables_ignoradas": {"type": "boolean"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "ACEPTAR"}}},
+      "then": {
+        "properties": {
+          "fecha_corte_normalizada": {"type": "string", "format": "date"},
+          "instrumentos_solicitados": {"minItems": 1},
+          "proposito": {"type": "string", "minLength": 1},
+          "datos_faltantes": {"maxItems": 0},
+          "motivos_rechazo": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"decision": {"const": "RECHAZAR"}}},
+      "then": {"properties": {"motivos_rechazo": {"minItems": 1}}}
+    },
+    {
+      "if": {"properties": {"decision": {"const": "SOLICITAR_ACLARACION"}}},
+      "then": {"properties": {"datos_faltantes": {"minItems": 1}}}
+    }
+  ],
+  "$defs": {
+    "incidencia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["codigo", "severidad", "mensaje"],
+      "properties": {
+        "codigo": {"type": "string", "pattern": "^[A-Z0-9_]{3,64}$"},
+        "severidad": {"type": "string", "enum": ["INFO", "ADVERTENCIA", "ERROR", "CRITICA"]},
+        "mensaje": {"type": "string", "minLength": 1, "maxLength": 500}
+      }
+    }
+  }
+}

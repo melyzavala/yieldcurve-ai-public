@@ -1,0 +1,3303 @@
+{
+  "name": "YieldCurve AI — Telegram Orchestration V6 API",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const current = $input.first()?.json ?? {};\n\nlet apiResult = {};\n\ntry {\n  const raw = current.api_result_json;\n\n  apiResult =\n    typeof raw === 'string'\n      ? JSON.parse(raw)\n      : (raw ?? {});\n} catch (error) {\n  throw new Error(\n    'No se pudo interpretar api_result_json del caso persistido.'\n  );\n}\n\nconst caseArtifact = apiResult.case_artifact;\n\nif (\n  !caseArtifact ||\n  typeof caseArtifact !== 'object' ||\n  Array.isArray(caseArtifact)\n) {\n  throw new Error(\n    'El caso persistido no contiene un case_artifact válido.'\n  );\n}\n\nreturn [\n  {\n    json: {\n      ...current,\n      case_artifact: caseArtifact,\n    },\n  },\n];"
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100001",
+      "name": "Prepare curve artifact payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [10320, 2140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://yieldcurve-ai.onrender.com/v1/artifacts/curve.png",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.case_artifact) }}",
+        "options": {"timeout": 30000, "response": {"response": {"responseFormat": "file", "outputPropertyName": "data"}}, "retry": {"maxTries": 1}}
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100002",
+      "name": "Generate curve PNG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [10544, 2140],
+      "credentials": {"httpHeaderAuth": {"id": "__YC_RENDER_AUTH__", "name": "__YC_RENDER_AUTH__"}}
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Normalize safe Telegram event').first().json.telegram_chat_id }}",
+        "operation": "sendPhoto",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "additionalFields": {"caption": "={{ 'Curva spot · ' + $('Validate new case request').first().json.fecha_corte + ' · ' + $('Validate new case request').first().json.execution_mode }}", "appendAttribution": false}
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100003",
+      "name": "Telegram | Send curve photo",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [10768, 2140],
+      "credentials": {"telegramApi": {"id": "__YC_TELEGRAM_CREDENTIAL__", "name": "__YC_TELEGRAM_CREDENTIAL__"}}
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "id": "13063a4a-5162-447f-827d-42fa6b9e49c0",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        6912,
+        2464
+      ],
+      "webhookId": "__YC_TELEGRAM_WEBHOOK__",
+      "credentials": {
+        "telegramApi": {
+          "id": "__YC_TELEGRAM_CREDENTIAL__",
+          "name": "__YC_TELEGRAM_CREDENTIAL__"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const u=$input.first().json,cb=u.callback_query||null,m=cb?.message||u.message||{},x=String(cb?.data??u.message?.text??'').trim(),p=x.split(/\\s+/);let route='INVALID',args=[];if(cb){const q=x.split('|');route=q.length===3&&['APR','REJ'].includes(q[0])?'CALLBACK':'INVALID';args=q;}else{route=['/start','/ayuda','/demo','/nuevo','/estado','/acceso'].includes((p[0]||'').toLowerCase())?(p[0]||'').toLowerCase():'INVALID';args=p.slice(1);}return[{json:{event_id:`TG-${String(u.update_id??'UNKNOWN')}`,telegram_user_id:String(cb?.from?.id??u.message?.from?.id??''),telegram_chat_id:String(m.chat?.id??''),private_chat:m.chat?.type==='private',route,args,callback_query_id:cb?.id??null,received_at:new Date().toISOString()}}];"
+      },
+      "id": "fd94ccb7-deed-44df-b40b-9a3de729d929",
+      "name": "Normalize safe Telegram event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7152,
+        2464
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_EVENTS_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_EVENTS",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_EVENTS_TABLE_ID__"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "keyValue": "={{ $json.event_id }}"
+            }
+          ]
+        }
+      },
+      "id": "c8205612-5cf9-453b-8cc7-1cbbffb7fc66",
+      "name": "YC_EVENTS | Find event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        7376,
+        2464
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.duplicate }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "false"
+              }
+            }
+          ],
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "2cfe7d22-8c25-4709-8270-3ff6c682fc27",
+      "name": "Gate duplicate before claim",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7744,
+        2464
+      ],
+      "notes": "Configure with lookup result: existing event goes to duplicate response; empty result goes to claim. event_id is unique."
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_EVENTS_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_EVENTS",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_EVENTS_TABLE_ID__"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ $('Normalize safe Telegram event').first().json.event_id }}",
+            "processing_status": "RECEIVED",
+            "received_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "processing_status",
+              "displayName": "processing_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d1b13a79-72a5-4f90-ac6d-1ffbf2940074",
+      "name": "YC_EVENTS | Claim new event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        7920,
+        2336
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_ACCESS_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_ACCESS",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_ACCESS_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_user_id",
+              "keyValue": "={{ $('Normalize safe Telegram event').first().json.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "492c886d-a906-4518-bcdc-b999ad12b90f",
+      "name": "YC_ACCESS | Load matching access",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        8128,
+        2336
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const e=$('Normalize safe Telegram event').first().json,a=$input.first().json,ok=e.private_chat&&String(a.telegram_user_id)===e.telegram_user_id&&String(a.telegram_chat_id)===e.telegram_chat_id&&a.status==='ACTIVE'&&['OWNER','EVALUATOR'].includes(a.role)&&(!a.expires_at||Date.parse(a.expires_at)>Date.now());let next='REPLY',reply='Acceso no autorizado.';if(e.route==='/start'||e.route==='/ayuda')next='HELP';else if(e.route==='/acceso')next='ACCESS';else if(ok&&['/demo','/nuevo'].includes(e.route))next='NEW';else if(ok&&e.route==='/estado')next='STATUS';else if(ok&&e.route==='CALLBACK')next='CALLBACK';return[{json:{...e,access:a,authorized:ok,next,reply}}];"
+      },
+      "id": "779f6472-f194-48af-86c8-da3483f5336d",
+      "name": "Authorize and route",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8352,
+        2336
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.next }}",
+                    "rightValue": "NEW",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              }
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.next }}",
+                    "rightValue": "STATUS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              }
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.next }}",
+                    "rightValue": "CALLBACK",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              }
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.next }}",
+                    "rightValue": "ACCESS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "01d196be-161f-4c45-9ef1-59dda9e20fbf",
+      "name": "Route command",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        8544,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const e=$input.first().json,d=e.route==='/demo'?'2026-11-11':String(e.args[0]||''),z=/^\\d{4}-\\d{2}-\\d{2}$/.test(d)&&new Date(d+'T00:00:00Z').toISOString().slice(0,10)===d;if(!z)return[{json:{...e,valid_request:false,reply:'Fecha inválida. Usa /nuevo YYYY-MM-DD.'}}];const s=String(e.event_id).replace(/[^A-Z0-9]/gi,'').toUpperCase().padStart(8,'0').slice(-32),caso_id=`YC-${s}`;return[{json:{...e,valid_request:true,caso_id,version_caso:1,version_curva:`CURVA-${caso_id}-V1`,fecha_corte:d,execution_mode:e.route==='/demo'?'DEMO':'LIVE',approval_expires_at:new Date(Date.now()+900000).toISOString(),invocation_id:`n8n-${e.event_id}`}}];"
+      },
+      "id": "923b9ed8-ac98-4ed2-8519-4527cea13c86",
+      "name": "Validate new case request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8736,
+        2224
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid_request }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "e72780b6-60d1-4578-821f-22a9418aeedf",
+      "name": "Gate valid request before case",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        8944,
+        2224
+      ]
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_CASES_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_CASES",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_CASES_TABLE_ID__"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "caso_id": "={{ $json.caso_id }}",
+            "version_caso": "={{ $json.version_caso }}",
+            "version_curva": "={{ $json.version_curva }}",
+            "fecha_corte": "={{ $json.fecha_corte }}",
+            "execution_mode": "={{ $json.execution_mode }}",
+            "canal_origen": "telegram",
+            "telegram_user_id": "={{ $json.telegram_user_id }}",
+            "telegram_chat_id": "={{ $json.telegram_chat_id }}",
+            "estado": "PENDIENTE_EJECUCION",
+            "approval_status": "NOT_AVAILABLE",
+            "approval_expires_at": "={{ $json.approval_expires_at }}",
+            "created_at": "={{ $now.toISO() }}",
+            "updated_at": "={{ $now.toISO() }}",
+            "invocation_id": "={{ $json.invocation_id }}",
+            "created_event_id": "={{ $json.event_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "caso_id",
+              "displayName": "caso_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "version_caso",
+              "displayName": "version_caso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "version_curva",
+              "displayName": "version_curva",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "fecha_corte",
+              "displayName": "fecha_corte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "execution_mode",
+              "displayName": "execution_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "canal_origen",
+              "displayName": "canal_origen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "telegram_user_id",
+              "displayName": "telegram_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "telegram_chat_id",
+              "displayName": "telegram_chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dictamen_tecnico",
+              "displayName": "dictamen_tecnico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "requiere_aprobacion_humana",
+              "displayName": "requiere_aprobacion_humana",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "source_mode",
+              "displayName": "source_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "instrument_count",
+              "displayName": "instrument_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "max_absolute_repricing_error",
+              "displayName": "max_absolute_repricing_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "metodologia",
+              "displayName": "metodologia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "auditoria_tecnicamente_valida",
+              "displayName": "auditoria_tecnicamente_valida",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "approval_expires_at",
+              "displayName": "approval_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invocation_id",
+              "displayName": "invocation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "created_event_id",
+              "displayName": "created_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "decision_event_id",
+              "displayName": "decision_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "decision_at",
+              "displayName": "decision_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "api_result_json",
+              "displayName": "api_result_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e5319ccf-51c2-4fcf-987d-778c70e1aa70",
+      "name": "YC_CASES | Create pending case",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        9136,
+        2192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://yieldcurve-ai.onrender.com/v1/orion/run",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  caso_id: $json.caso_id,\n  version_caso: $json.version_caso,\n  version_curva: $json.version_curva,\n  fecha_corte: $json.fecha_corte,\n  canal_origen: 'telegram',\n  solicitud: 'Construye una curva spot de CETES y M-Bonos con fecha de corte ' + $json.fecha_corte + ' para valuación y análisis de riesgo de un portafolio ficticio.',\n  execution_mode: $json.execution_mode,\n  invocation_id: $json.invocation_id\n} }}",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "id": "50b00536-a95c-4120-8737-f62a0759ce14",
+      "name": "Invoke YieldCurve API once",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        9344,
+        2192
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__YC_RENDER_AUTH__",
+          "name": "__YC_RENDER_AUTH__"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_CASES_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_CASES",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_CASES_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "caso_id",
+              "keyValue": "={{ $('Validate new case request').first().json.caso_id }}"
+            },
+            {
+              "keyName": "version_caso",
+              "keyValue": "={{ $('Validate new case request').first().json.version_caso }}"
+            },
+            {
+              "keyName": "estado",
+              "keyValue": "PENDIENTE_EJECUCION"
+            },
+            {
+              "keyName": "approval_status",
+              "keyValue": "NOT_AVAILABLE"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "={{ $json.estado }}",
+            "dictamen_tecnico": "={{ $json.auditoria?.tecnicamente_valida ? 'VALIDADO':'NO_VALIDADO' }}",
+            "requiere_aprobacion_humana": "={{ $json.requiere_aprobacion_humana }}",
+            "source_mode": "={{ $json.fuente_datos?.source_mode }}",
+            "instrument_count": "={{ $json.resultado_curva?.instrument_count }}",
+            "max_absolute_repricing_error": "={{ $json.resultado_curva?.max_absolute_repricing_error }}",
+            "metodologia": "={{ $json.resultado_curva?.metodologia }}",
+            "auditoria_tecnicamente_valida": "={{ $json.auditoria?.tecnicamente_valida }}",
+            "approval_status": "={{ $json.estado === 'PENDIENTE_APROBACION' ? 'PENDING':'NOT_AVAILABLE' }}",
+            "api_result_json": "={{ JSON.stringify($json) }}",
+            "updated_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "caso_id",
+              "displayName": "caso_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "version_caso",
+              "displayName": "version_caso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "version_curva",
+              "displayName": "version_curva",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fecha_corte",
+              "displayName": "fecha_corte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "execution_mode",
+              "displayName": "execution_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "canal_origen",
+              "displayName": "canal_origen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "telegram_user_id",
+              "displayName": "telegram_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "telegram_chat_id",
+              "displayName": "telegram_chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dictamen_tecnico",
+              "displayName": "dictamen_tecnico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "requiere_aprobacion_humana",
+              "displayName": "requiere_aprobacion_humana",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "source_mode",
+              "displayName": "source_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "instrument_count",
+              "displayName": "instrument_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "max_absolute_repricing_error",
+              "displayName": "max_absolute_repricing_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "metodologia",
+              "displayName": "metodologia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "auditoria_tecnicamente_valida",
+              "displayName": "auditoria_tecnicamente_valida",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "approval_expires_at",
+              "displayName": "approval_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invocation_id",
+              "displayName": "invocation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "created_event_id",
+              "displayName": "created_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "decision_event_id",
+              "displayName": "decision_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "decision_at",
+              "displayName": "decision_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "api_result_json",
+              "displayName": "api_result_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6af5829f-fbb1-4b52-8bc6-2d1b5982afac",
+      "name": "YC_CASES | Save API result",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        9536,
+        2128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_CASES_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_CASES",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_CASES_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "caso_id",
+              "keyValue": "={{ $('Validate new case request').first().json.caso_id }}"
+            },
+            {
+              "keyName": "version_caso",
+              "keyValue": "={{ $('Validate new case request').first().json.version_caso }}"
+            },
+            {
+              "keyName": "estado",
+              "keyValue": "PENDIENTE_EJECUCION"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "DETENIDO",
+            "approval_status": "NOT_AVAILABLE",
+            "updated_at": "={{ $now.toISO() }}",
+            "dictamen_tecnico": "NOT_AVAILABLE"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "caso_id",
+              "displayName": "caso_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "version_caso",
+              "displayName": "version_caso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "version_curva",
+              "displayName": "version_curva",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fecha_corte",
+              "displayName": "fecha_corte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "execution_mode",
+              "displayName": "execution_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "canal_origen",
+              "displayName": "canal_origen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "telegram_user_id",
+              "displayName": "telegram_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "telegram_chat_id",
+              "displayName": "telegram_chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dictamen_tecnico",
+              "displayName": "dictamen_tecnico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "requiere_aprobacion_humana",
+              "displayName": "requiere_aprobacion_humana",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "source_mode",
+              "displayName": "source_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "instrument_count",
+              "displayName": "instrument_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "max_absolute_repricing_error",
+              "displayName": "max_absolute_repricing_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "metodologia",
+              "displayName": "metodologia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "auditoria_tecnicamente_valida",
+              "displayName": "auditoria_tecnicamente_valida",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "approval_expires_at",
+              "displayName": "approval_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invocation_id",
+              "displayName": "invocation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "created_event_id",
+              "displayName": "created_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "decision_event_id",
+              "displayName": "decision_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "decision_at",
+              "displayName": "decision_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "api_result_json",
+              "displayName": "api_result_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e4ca1f2d-c368-44d3-a818-0ac21af260e6",
+      "name": "YC_CASES | Persist API error",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        9536,
+        2288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_CASES_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_CASES",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_CASES_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "caso_id",
+              "keyValue": "={{ $json.route === 'CALLBACK' ? $json.args[1] : $json.args[0] }}"
+            }
+          ]
+        }
+      },
+      "id": "1bcf8a23-6ff8-43cd-8c8d-e4c7bd08a22b",
+      "name": "YC_CASES | Load case",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        8768,
+        2416
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const e = $('Authorize and route').first().json;\nconst c = $input.first().json;\n\nconst owner = e.access?.role === 'OWNER';\n\nconst owned =\n  String(c.telegram_user_id) === String(e.telegram_user_id) &&\n  String(c.telegram_chat_id) === String(e.telegram_chat_id);\n\nconst canSee = owner || owned;\nconst isCallback = e.route === 'CALLBACK';\n\nconst approvalExpiry = c.approval_expires_at\n  ? Date.parse(c.approval_expires_at)\n  : NaN;\n\nconst expired =\n  canSee &&\n  c.approval_status === 'PENDING' &&\n  Number.isFinite(approvalExpiry) &&\n  approvalExpiry <= Date.now();\n\nconst act = e.args?.[0];\nconst callbackCaseId = e.args?.[1];\nconst callbackVersion = e.args?.[2];\n\nconst allowed =\n  isCallback &&\n  canSee &&\n  e.private_chat &&\n  ['OWNER', 'EVALUATOR'].includes(e.access?.role) &&\n  String(c.caso_id) === String(callbackCaseId) &&\n  c.estado === 'PENDIENTE_APROBACION' &&\n  c.approval_status === 'PENDING' &&\n  !expired &&\n  String(c.version_caso) === String(callbackVersion) &&\n  ['APR', 'REJ'].includes(act);\n\nconst folio =\n  c?.caso_id ||\n  String(e.args?.[isCallback ? 1 : 0] || '');\n\nlet reply;\n\nif (isCallback) {\n  reply = allowed\n    ? ''\n    : expired\n      ? `El periodo de aprobación del caso ${folio} expiró.`\n      : 'Decisión no autorizada o caso no vigente.';\n} else {\n  reply = canSee\n    ? `Caso ${folio} | Fecha: ${c.fecha_corte} | Modo: ${c.execution_mode} | Estado: ${\n        expired ? 'EXPIRADO' : c.estado\n      } | Dictamen: ${c.dictamen_tecnico} | Aprobación: ${\n        expired ? 'EXPIRED' : c.approval_status\n      } | Actualización: ${c.updated_at}`\n    : 'Folio no disponible.';\n}\n\nreturn [\n  {\n    json: {\n      ...e,\n      case_row: c,\n      canSee,\n      is_callback: isCallback,\n      expired,\n      allowed,\n      new_state:\n        act === 'APR'\n          ? 'APROBADA_HUMANAMENTE'\n          : 'RECHAZADA_HUMANAMENTE',\n      reply,\n    },\n  },\n];"
+      },
+      "id": "7037521e-1324-4e60-a670-00046a85fd9e",
+      "name": "Guard status callback and expiry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8960,
+        2416
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.expired }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    }
+                  }
+                ],
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              }
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.allowed }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    }
+                  }
+                ],
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "d46c115a-d36b-4cb7-bd91-32d46115535c",
+      "name": "Gate expired or allowed callback",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        9136,
+        2400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_CASES_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_CASES",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_CASES_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "caso_id",
+              "keyValue": "={{ $json.case_row.caso_id }}"
+            },
+            {
+              "keyName": "version_caso",
+              "keyValue": "={{ $json.case_row.version_caso }}"
+            },
+            {
+              "keyName": "approval_status",
+              "keyValue": "PENDING"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "EXPIRADO",
+            "approval_status": "EXPIRED",
+            "updated_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "caso_id",
+              "displayName": "caso_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "version_caso",
+              "displayName": "version_caso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "version_curva",
+              "displayName": "version_curva",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fecha_corte",
+              "displayName": "fecha_corte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "execution_mode",
+              "displayName": "execution_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "canal_origen",
+              "displayName": "canal_origen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "telegram_user_id",
+              "displayName": "telegram_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "telegram_chat_id",
+              "displayName": "telegram_chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dictamen_tecnico",
+              "displayName": "dictamen_tecnico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "requiere_aprobacion_humana",
+              "displayName": "requiere_aprobacion_humana",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "source_mode",
+              "displayName": "source_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "instrument_count",
+              "displayName": "instrument_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "max_absolute_repricing_error",
+              "displayName": "max_absolute_repricing_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "metodologia",
+              "displayName": "metodologia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "auditoria_tecnicamente_valida",
+              "displayName": "auditoria_tecnicamente_valida",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "approval_expires_at",
+              "displayName": "approval_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invocation_id",
+              "displayName": "invocation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "created_event_id",
+              "displayName": "created_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "decision_event_id",
+              "displayName": "decision_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "decision_at",
+              "displayName": "decision_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "api_result_json",
+              "displayName": "api_result_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "3424583e-9979-4cbe-815b-0bbe417c831e",
+      "name": "YC_CASES | Persist expired",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        9360,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_CASES_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_CASES",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_CASES_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "caso_id",
+              "keyValue": "={{ $json.case_row.caso_id }}"
+            },
+            {
+              "keyName": "version_caso",
+              "keyValue": "={{ $json.case_row.version_caso }}"
+            },
+            {
+              "keyName": "estado",
+              "keyValue": "PENDIENTE_APROBACION"
+            },
+            {
+              "keyName": "approval_status",
+              "keyValue": "PENDING"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "={{ $json.new_state }}",
+            "approval_status": "={{ $json.new_state === 'APROBADA_HUMANAMENTE' ? 'APPROVED':'REJECTED' }}",
+            "decision_event_id": "={{ $json.event_id }}",
+            "decision_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "caso_id",
+              "displayName": "caso_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "version_caso",
+              "displayName": "version_caso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "version_curva",
+              "displayName": "version_curva",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fecha_corte",
+              "displayName": "fecha_corte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "execution_mode",
+              "displayName": "execution_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "canal_origen",
+              "displayName": "canal_origen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "telegram_user_id",
+              "displayName": "telegram_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "telegram_chat_id",
+              "displayName": "telegram_chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dictamen_tecnico",
+              "displayName": "dictamen_tecnico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "requiere_aprobacion_humana",
+              "displayName": "requiere_aprobacion_humana",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "source_mode",
+              "displayName": "source_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "instrument_count",
+              "displayName": "instrument_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "max_absolute_repricing_error",
+              "displayName": "max_absolute_repricing_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "metodologia",
+              "displayName": "metodologia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "auditoria_tecnicamente_valida",
+              "displayName": "auditoria_tecnicamente_valida",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "approval_expires_at",
+              "displayName": "approval_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "invocation_id",
+              "displayName": "invocation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "created_event_id",
+              "displayName": "created_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "decision_event_id",
+              "displayName": "decision_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "decision_at",
+              "displayName": "decision_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "api_result_json",
+              "displayName": "api_result_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "313f63c6-f8c8-446e-b67f-10c89454d0e4",
+      "name": "YC_CASES | Persist allowed decision",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        9376,
+        2528
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_ACCESS_CODES_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_ACCESS_CODES",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_ACCESS_CODES_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "code",
+              "keyValue": "={{ $json.args.length === 1 ? $json.args[0] : '__INVALID__' }}"
+            }
+          ]
+        }
+      },
+      "id": "c498d19e-4fa7-4d19-ab73-d3919c705847",
+      "name": "YC_ACCESS_CODES | Load access code",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        8736,
+        2688
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const e=$('Authorize and route').first().json,c=$input.first().json,valid=e.private_chat&&e.args.length===1&&c.status==='ACTIVE'&&!c.used_at&&Date.parse(c.expires_at)>Date.now()&&c.role==='EVALUATOR';return[{json:{...e,code_row:c,access_code_valid:valid,reply:valid?'Acceso temporal habilitado.':'Código no disponible o vencido.'}}];"
+      },
+      "id": "27623871-e038-488d-b79f-a974ebbb83c0",
+      "name": "Validate and consume access code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8944,
+        2688
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.access_code_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "d1351a5f-1381-4d8b-808e-e8cb8b367da2",
+      "name": "Gate valid access code",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        9136,
+        2688
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_ACCESS_CODES_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_ACCESS_CODES",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_ACCESS_CODES_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Validate and consume access code').first().json.code_row.id }}"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "ACTIVE"
+            },
+            {
+              "keyName": "used_at",
+              "condition": "isEmpty"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "USED",
+            "used_at": "={{ $now.toISO() }}",
+            "used_by_user_id": "={{ $('Validate and consume access code').first().json.telegram_user_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "code",
+              "displayName": "code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "used_at",
+              "displayName": "used_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "used_by_user_id",
+              "displayName": "used_by_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "24b37551-719c-4194-8fad-0e46b2f4e1e7",
+      "name": "YC_ACCESS_CODES | Consume code",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        9344,
+        2688
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_ACCESS_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_ACCESS",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_ACCESS_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_user_id",
+              "keyValue": "={{ $('Validate and consume access code').first().json.telegram_user_id }}"
+            },
+            {
+              "keyName": "telegram_chat_id",
+              "keyValue": "={{ $('Validate and consume access code').first().json.telegram_chat_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_user_id": "={{ $('Verify code consumption').first().json.telegram_user_id }}",
+            "telegram_chat_id": "={{ $('Verify code consumption').first().json.telegram_chat_id }}",
+            "role": "EVALUATOR",
+            "status": "ACTIVE",
+            "created_at": "={{ $now.toISO() }}",
+            "consumed_code_id": "={{ $('Verify code consumption').first().json.code_row.id }}",
+            "expires_at": "={{ $('Verify code consumption').first().json.code_row.expires_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telegram_user_id",
+              "displayName": "telegram_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "telegram_chat_id",
+              "displayName": "telegram_chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "consumed_code_id",
+              "displayName": "consumed_code_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "89d467d9-ae81-4249-b3fd-80c925b6b4da",
+      "name": "YC_ACCESS | Create evaluator",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        9536,
+        2688
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const j=$input.first().json,h='YieldCurve AI (simulado)\\n/demo\\n/nuevo YYYY-MM-DD\\n/estado FOLIO\\n/acceso CODIGO\\n/ayuda';return[{json:{...j,reply:(j.route==='/start'||j.route==='/ayuda')?h:(j.reply||'El servicio de cálculo no está disponible en este momento. El caso quedó detenido y no fue aprobado.'),reply_markup:j.reply_markup||null}}];"
+      },
+      "id": "baa17578-5f68-495b-ad5a-3ade027fc750",
+      "name": "Prepare safe response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9760,
+        2400
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Prepare curve artifact payload').first().json.telegram_chat_id }}",
+        "text": "={{ $('Prepare curve artifact payload').first().json.reply }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "400090ca-6ba8-4ccf-b5dc-6fbc08fc06a1",
+      "name": "Telegram | Send response",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        10336,
+        2432
+      ],
+      "webhookId": "__YC_TELEGRAM_WEBHOOK__",
+      "credentials": {
+        "telegramApi": {
+          "id": "__YC_TELEGRAM_CREDENTIAL__",
+          "name": "__YC_TELEGRAM_CREDENTIAL__"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "callback",
+        "queryId": "={{ $('Normalize safe Telegram event').first().json.callback_query_id }}",
+        "additionalFields": {}
+      },
+      "id": "b4743b02-2c22-441f-95d0-6d4f15db3a25",
+      "name": "Telegram | Answer callback",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        9600,
+        2528
+      ],
+      "webhookId": "__YC_TELEGRAM_WEBHOOK__",
+      "credentials": {
+        "telegramApi": {
+          "id": "__YC_TELEGRAM_CREDENTIAL__",
+          "name": "__YC_TELEGRAM_CREDENTIAL__"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_EVENTS_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_EVENTS",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_EVENTS_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "keyValue": "={{ $('Normalize safe Telegram event').first().json.event_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "processing_status": "PROCESSED"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "processing_status",
+              "displayName": "processing_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9e62463a-3f07-45b9-8851-4d948f022aae",
+      "name": "YC_EVENTS | Mark processed",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        10672,
+        2352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const e=$('Normalize safe Telegram event').first().json;return[{json:{...e,duplicate:Boolean($json.event_id)}}];"
+      },
+      "id": "db8f81cc-334b-4c2e-957b-c34c41bb1bdb",
+      "name": "Determine duplicate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7552,
+        2464
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_ACCESS_CODES_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_ACCESS_CODES",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_ACCESS_CODES_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Validate and consume access code').first().json.code_row.id }}"
+            }
+          ]
+        }
+      },
+      "name": "YC_ACCESS_CODES | Verify consumed code",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        9776,
+        3056
+      ],
+      "alwaysOutputData": true,
+      "id": "2aa84f85-0449-4aa6-8324-9363e0c244b4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const e=$('Validate and consume access code').first().json,c=$input.first()?.json||{};const confirmed=c.status==='USED'&&Boolean(c.used_at)&&String(c.used_by_user_id)===String(e.telegram_user_id);return[{json:{...e,code_row:c,consumption_confirmed:confirmed,reply:confirmed?'Acceso temporal habilitado.':'El código no pudo ser consumido o ya no está disponible.'}}];"
+      },
+      "name": "Verify code consumption",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        10064,
+        3184
+      ],
+      "id": "95b13d89-1ad3-496f-859f-01c0fcba2fb2"
+    },
+    {
+      "parameters": {},
+      "name": "Gate consumption confirmed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        10080,
+        2976
+      ],
+      "id": "846ac6ce-9f37-4ef2-9d59-e147879f9b68"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "__YC_CASES_TABLE_ID__",
+          "mode": "list",
+          "cachedResultName": "YC_CASES",
+          "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_CASES_TABLE_ID__"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "caso_id",
+              "keyValue": "={{ $('Validate new case request').first().json.caso_id }}"
+            },
+            {
+              "keyName": "version_caso",
+              "keyValue": "={{ $('Validate new case request').first().json.version_caso }}"
+            }
+          ]
+        }
+      },
+      "name": "YC_CASES | Load saved result",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        9840,
+        3424
+      ],
+      "id": "606e25c1-544d-4df0-9efe-264024ae5fd0"
+    },
+    {
+      "parameters": {
+        "jsCode": "const api = $('Invoke YieldCurve API once').first().json;\nconst req = $('Validate new case request').first().json;\nconst p = $input.first().json;\n\nconst curve = api.resultado_curva || {};\nconst audit = api.auditoria || {};\nconst agents = api.agentes || api;\n\nconst elara = agents.elara || api.elara || {};\nconst siena = agents.siena || api.siena || {};\nconst nash = agents.nash || api.nash || {};\nconst atenea = agents.atenea || api.atenea || {};\n\nconst missing = elara.datos_faltantes;\n\n// ---------------------------------------------------------\n// CAPA DE PRESENTACIÓN\n// No modifica códigos técnicos ni valores persistidos.\n// ---------------------------------------------------------\n\nconst friendly = {\n  PENDIENTE_APROBACION: 'Pendiente de aprobación',\n  PENDIENTE_ACLARACION: 'Pendiente de aclaración',\n  PENDIENTE_EJECUCION: 'Pendiente de ejecución',\n  APROBADA_HUMANAMENTE: 'Aprobado por decisión humana',\n  RECHAZADO: 'Rechazado',\n  DETENIDO: 'Detenido',\n  EXPIRADO: 'Expirado',\n\n  ACEPTAR: 'Aceptado',\n  RECHAZAR: 'Rechazado',\n\n  DATOS_VALIDOS: 'Datos validados',\n  CALCULO_COMPLETADO: 'Cálculo completado',\n  DICTAMEN_TECNICO_VALIDADO: 'Dictamen técnico validado',\n  VALIDADO: 'Validado',\n  NO_VALIDADO: 'No validado',\n\n  NOT_AVAILABLE: 'No disponible',\n  NO_DISPONIBLE: 'No disponible',\n};\n\nconst pretty = (value) => {\n  if (value === null || value === undefined || value === '') {\n    return 'N/D';\n  }\n\n  if (friendly[value]) {\n    return friendly[value];\n  }\n\n  const text = String(value).replaceAll('_', ' ').toLowerCase();\n  return text.charAt(0).toUpperCase() + text.slice(1);\n};\n\nconst formatDate = (value) => {\n  if (!value) return 'N/D';\n\n  const parts = String(value).split('-');\n\n  if (parts.length === 3) {\n    return `${parts[2]}/${parts[1]}/${parts[0]}`;\n  }\n\n  return value;\n};\n\nconst sourceMode = api.fuente_datos?.source_mode;\n\nconst sourceFriendly = {\n  FIXTURE_BANXICO_2026_11_11: 'Banxico · Snapshot DEMO 11/11/2026',\n  'FIXTURE_BANXICO_2026-11-11': 'Banxico · Snapshot DEMO 11/11/2026',\n  BANXICO_SIE_LIVE: 'Banxico SIE · Datos en vivo',\n  NOT_QUERIED: 'Fuente no consultada',\n}[sourceMode] || pretty(sourceMode);\n\nconst methodology = curve.metodologia;\n\nconst methodologyFriendly = {\n  EXCEL_BOOTSTRAP_182D_V1: 'Bootstrap 182 días · V1',\n}[methodology] || pretty(methodology);\n\nconst formatError = (value) => {\n  if (value === null || value === undefined || value === '') {\n    return 'N/D';\n  }\n\n  const number = Number(value);\n\n  if (!Number.isFinite(number)) {\n    return String(value);\n  }\n\n  if (number === 0) {\n    return '0';\n  }\n\n  if (Math.abs(number) < 0.0001) {\n    const [coefficient, exponent] = number.toExponential(2).split('e');\n\n    const superscriptMap = {\n      '-': '⁻',\n      '+': '',\n      '0': '⁰',\n      '1': '¹',\n      '2': '²',\n      '3': '³',\n      '4': '⁴',\n      '5': '⁵',\n      '6': '⁶',\n      '7': '⁷',\n      '8': '⁸',\n      '9': '⁹',\n    };\n\n    const exponentPretty = exponent\n      .split('')\n      .map((char) => superscriptMap[char] ?? char)\n      .join('');\n\n    return `${coefficient} × 10${exponentPretty}`;\n  }\n\n  return number.toLocaleString('es-MX', {\n    maximumSignificantDigits: 6,\n  });\n};\n\n// ---------------------------------------------------------\n// ELEGIBILIDAD DE APROBACIÓN\n// ---------------------------------------------------------\n\nconst eligible =\n  api.estado === 'PENDIENTE_APROBACION' &&\n  api.requiere_aprobacion_humana === true &&\n  Boolean(api.resultado_curva) &&\n  Array.isArray(curve.pillars) &&\n  curve.pillars.length > 0 &&\n  audit.tecnicamente_valida === true &&\n  p.approval_status === 'PENDING';\n\n// ---------------------------------------------------------\n// MENSAJE TELEGRAM\n// ---------------------------------------------------------\n\nlet reply =\n  `Caso ${req.caso_id}\\n` +\n  `Fecha: ${formatDate(req.fecha_corte)} · Modo: ${req.execution_mode}\\n\\n` +\n\n  `Estado: ${pretty(api.estado || 'NO_DISPONIBLE')}\\n\\n` +\n\n  `Elara: ${pretty(elara.decision || elara.estado)}\\n` +\n  `Siena: ${pretty(siena.estado)}\\n` +\n  `Nash: ${pretty(nash.estado)}\\n` +\n  `Atenea: ${pretty(atenea.estado)}\\n\\n` +\n\n  `Fuente: ${sourceFriendly}\\n` +\n  `Metodología: ${methodologyFriendly}\\n` +\n  `Instrumentos: ${curve.instrument_count ?? 'N/D'}\\n` +\n  `Error máx. de repricing: ${formatError(curve.max_absolute_repricing_error)}\\n` +\n  `Auditoría técnica: ${audit.tecnicamente_valida === true ? 'Válida' : 'No válida'}`;\n\nif (\n  api.estado === 'PENDIENTE_ACLARACION' &&\n  Array.isArray(missing) &&\n  missing.length\n) {\n  reply += `\\n\\nDatos faltantes: ${missing.map(pretty).join(', ')}`;\n}\n\nif (eligible) {\n  reply += '\\n\\nEste resultado requiere aprobación humana.';\n}\n\n// ---------------------------------------------------------\n// OUTPUT\n// ---------------------------------------------------------\n\nreturn [\n  {\n    json: {\n      ...p,\n      reply,\n      eligible_for_approval: eligible,\n      reply_markup: eligible\n        ? {\n            inline_keyboard: [\n              [\n                {\n                  text: '✅ Aprobar',\n                  callback_data: `APR|${req.caso_id}|${req.version_caso}`,\n                },\n                {\n                  text: '❌ Rechazar',\n                  callback_data: `REJ|${req.caso_id}|${req.version_caso}`,\n                },\n              ],\n            ],\n          }\n        : null,\n    },\n  },\n];"
+      },
+      "name": "Format provisional result and buttons",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        9648,
+        3440
+      ],
+      "id": "a21f00bd-b5d0-4720-81ba-76ee58b104d5"
+    },
+    {
+      "parameters": {},
+      "name": "Route expired response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        9488,
+        3312
+      ],
+      "id": "1c1282f9-820a-4bdc-9486-4017e07fde8b"
+    },
+    {
+      "parameters": {},
+      "name": "Route non-allowed callback",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        9488,
+        3120
+      ],
+      "id": "f01e43c5-6c41-484f-903f-a31d05a27e6a"
+    },
+    {
+      "parameters": {
+        "jsCode": "const e=$('Verify code consumption').first().json;return[{json:{...e,reply:'Acceso temporal habilitado.',reply_markup:null}}];"
+      },
+      "name": "Restore access confirmation context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9744,
+        2688
+      ],
+      "id": "bd43b56c-f1cb-4d0c-b1d1-83d0b37825b2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const g=$('Guard status callback and expiry').first().json;const folio=g.case_row?.caso_id||String(g.args?.[1]||'');let reply='Decisión no autorizada o caso no vigente.';if(g.expired)reply=`El periodo de aprobación del caso ${folio} expiró.`;else if(g.allowed)reply=g.args?.[0]==='APR'?`Caso ${folio} aprobado por decisión humana.`:`Caso ${folio} rechazado por decisión humana.`;return[{json:{...g,reply,reply_markup:null}}];"
+      },
+      "name": "Restore callback response context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9952,
+        2688
+      ],
+      "id": "dbc15f73-9341-43c8-b517-a327e8173f16"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Prepare curve artifact payload').first().json.telegram_chat_id }}",
+        "text": "={{ $('Prepare curve artifact payload').first().json.reply }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Aprobar",
+                    "additionalFields": {
+                      "callback_data": "={{ 'APR|' + $('Prepare curve artifact payload').first().json.case_artifact.caso_id + '|' + $('Prepare curve artifact payload').first().json.case_artifact.version_caso }}"
+                    }
+                  },
+                  {
+                    "text": "❌ Rechazar",
+                    "additionalFields": {
+                      "callback_data": "={{ 'REJ|' + $('Prepare curve artifact payload').first().json.case_artifact.caso_id + '|' + $('Prepare curve artifact payload').first().json.case_artifact.version_caso }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "44632e7f-fff1-47b2-b503-51212584695a",
+      "name": "Telegram | Send approval response",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        10384,
+        2240
+      ],
+      "webhookId": "__YC_TELEGRAM_WEBHOOK__",
+      "credentials": {
+        "telegramApi": {
+          "id": "__YC_TELEGRAM_CREDENTIAL__",
+          "name": "__YC_TELEGRAM_CREDENTIAL__"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "c261748e-5dd6-4fde-a17b-6a97e97bd803",
+              "leftValue": "={{ $json.eligible_for_approval }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        10112,
+        2256
+      ],
+      "id": "bb9653ed-a5cb-4514-9f4c-3c4e0c730092",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize safe Telegram event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize safe Telegram event": {
+      "main": [
+        [
+          {
+            "node": "YC_EVENTS | Find event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_EVENTS | Find event": {
+      "main": [
+        [
+          {
+            "node": "Determine duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate duplicate before claim": {
+      "main": [
+        [
+          {
+            "node": "YC_EVENTS | Claim new event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare safe response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_EVENTS | Claim new event": {
+      "main": [
+        [
+          {
+            "node": "YC_ACCESS | Load matching access",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_ACCESS | Load matching access": {
+      "main": [
+        [
+          {
+            "node": "Authorize and route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize and route": {
+      "main": [
+        [
+          {
+            "node": "Route command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route command": {
+      "main": [
+        [
+          {
+            "node": "Validate new case request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YC_CASES | Load case",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YC_CASES | Load case",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YC_ACCESS_CODES | Load access code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare safe response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate new case request": {
+      "main": [
+        [
+          {
+            "node": "Gate valid request before case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate valid request before case": {
+      "main": [
+        [
+          {
+            "node": "YC_CASES | Create pending case",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare safe response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_CASES | Create pending case": {
+      "main": [
+        [
+          {
+            "node": "Invoke YieldCurve API once",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoke YieldCurve API once": {
+      "main": [
+        [
+          {
+            "node": "YC_CASES | Save API result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YC_CASES | Persist API error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_CASES | Save API result": {
+      "main": [
+        [
+          {
+            "node": "YC_CASES | Load saved result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_CASES | Persist API error": {
+      "main": [
+        [
+          {
+            "node": "Prepare safe response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_CASES | Load case": {
+      "main": [
+        [
+          {
+            "node": "Guard status callback and expiry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guard status callback and expiry": {
+      "main": [
+        [
+          {
+            "node": "Gate expired or allowed callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate expired or allowed callback": {
+      "main": [
+        [
+          {
+            "node": "YC_CASES | Persist expired",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YC_CASES | Persist allowed decision",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route non-allowed callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_CASES | Persist expired": {
+      "main": [
+        [
+          {
+            "node": "Route expired response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_CASES | Persist allowed decision": {
+      "main": [
+        [
+          {
+            "node": "Telegram | Answer callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_ACCESS_CODES | Load access code": {
+      "main": [
+        [
+          {
+            "node": "Validate and consume access code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and consume access code": {
+      "main": [
+        [
+          {
+            "node": "Gate valid access code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate valid access code": {
+      "main": [
+        [
+          {
+            "node": "YC_ACCESS_CODES | Consume code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare safe response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_ACCESS_CODES | Consume code": {
+      "main": [
+        [
+          {
+            "node": "YC_ACCESS_CODES | Verify consumed code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_ACCESS | Create evaluator": {
+      "main": [
+        [
+          {
+            "node": "Restore access confirmation context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare safe response": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram | Send response": {
+      "main": [
+        [
+          {
+            "node": "YC_EVENTS | Mark processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine duplicate": {
+      "main": [
+        [
+          {
+            "node": "Gate duplicate before claim",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_CASES | Load saved result": {
+      "main": [
+        [
+          {
+            "node": "Format provisional result and buttons",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format provisional result and buttons": {
+      "main": [
+        [
+          {
+            "node": "Prepare safe response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_ACCESS_CODES | Verify consumed code": {
+      "main": [
+        [
+          {
+            "node": "Verify code consumption",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify code consumption": {
+      "main": [
+        [
+          {
+            "node": "Gate consumption confirmed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate consumption confirmed": {
+      "main": [
+        [
+          {
+            "node": "YC_ACCESS | Create evaluator",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare safe response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route expired response": {
+      "main": [
+        [
+          {
+            "node": "Telegram | Answer callback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Restore callback response context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route non-allowed callback": {
+      "main": [
+        [
+          {
+            "node": "Telegram | Answer callback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Restore callback response context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram | Answer callback": {
+      "main": [
+        [
+          {
+            "node": "Restore callback response context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore access confirmation context": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore callback response context": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YC_EVENTS | Mark processed": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Prepare curve artifact payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram | Send response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare curve artifact payload": {"main": [[{"node": "Generate curve PNG", "type": "main", "index": 0}]]},
+    "Generate curve PNG": {"main": [[{"node": "Telegram | Send curve photo", "type": "main", "index": 0}], [{"node": "Telegram | Send approval response", "type": "main", "index": 0}]]},
+    "Telegram | Send curve photo": {"main": [[{"node": "Telegram | Send approval response", "type": "main", "index": 0}]]},
+    "Telegram | Send approval response": {
+      "main": [
+        [
+          {
+            "node": "YC_EVENTS | Mark processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  },
+  "versionId": "25d31169-3f1f-44be-8620-c0d22487e3a9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "86de5de3756ce5bb88d210ce9ce1bc2005f805e24f7c955ebbf39a1cd2ca1fc4"
+  },
+  "nodeGroups": [],
+  "id": "a6HQR10ZDrMRlQoU",
+  "tags": []
+}

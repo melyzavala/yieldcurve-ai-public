@@ -1,0 +1,12 @@
+{
+  "evidence_id": "P11 — Skill y loop con corrección",
+  "reproducible_command": "python -m pytest tests/test_excel_quality_orion.py tests/test_curve_quality_loop.py -q",
+  "methodology": "EXCEL_BOOTSTRAP_182D_V1",
+  "case_id": "YC-EXCEL20260414",
+  "limits": {"max_iterations": 3, "timeout_seconds": 30, "fail_closed": true},
+  "iterations": [
+    {"iteration": 1, "curve_version": "CURVA-EXCEL-001-V1", "nash": "CALCULO_COMPLETADO", "atenea": "DICTAMEN_TECNICO_RECHAZADO", "diagnostic_code": "REPRICING_INCONSISTENTE", "controlled_injection": true, "rebuilt_from_original": true, "tokens_llm": 0, "additional_cost_usd": 0.0},
+    {"iteration": 2, "curve_version": "CURVA-EXCEL-001-V2", "nash": "CALCULO_COMPLETADO", "atenea": "DICTAMEN_TECNICO_VALIDADO", "controlled_injection": false, "rebuilt_from_original": true, "tokens_llm": 0, "additional_cost_usd": 0.0}
+  ],
+  "costs": {"llm_calls": 0, "tokens_llm": 0, "api_variable_usd": 0.0, "infrastructure_usd": null}
+}

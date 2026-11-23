@@ -1,0 +1,24 @@
+[
+  {
+    "nombre": "calculo_completado_simulado",
+    "entrada": {"caso_id": "YC-SPOT20260414", "version_caso": 1, "version_curva": "CURVA-SIM-001"},
+    "salida_esperada": {
+      "estado": "CALCULO_COMPLETADO", "caso_id": "YC-SPOT20260414", "version_caso": 1, "version_curva": "CURVA-SIM-001", "modo": "SIMULADO", "agente": "Nash",
+      "interpretacion": {"mensaje": "Cálculo determinista completado; requiere auditoría financiera antes de cualquier uso.", "requiere_auditoria_humana": true},
+      "resultado_curva": {"instrument_count": 5, "max_absolute_repricing_error": 0.0, "interpolation_method": "PCHIP_LOG_DISCOUNT_FACTOR"},
+      "evidencia_skill": {"invocation_id": "nash-sim-001", "skill_path": "skills/build_spot_curve/SKILL.md", "skill_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "skill_status": "COMPLETED", "nash_instruction_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+      "advertencias": [], "errores": []
+    }
+  },
+  {
+    "nombre": "metadatos_mbono_faltantes",
+    "entrada": {"caso_id": "YC-SPOT20260415", "version_caso": 1, "version_curva": "CURVA-SIM-002"},
+    "salida_esperada": {
+      "estado": "CALCULO_RECHAZADO", "caso_id": "YC-SPOT20260415", "version_caso": 1, "version_curva": "CURVA-SIM-002", "modo": "SIMULADO", "agente": "Nash",
+      "interpretacion": {"mensaje": "El cálculo se detuvo por metadatos financieros obligatorios faltantes.", "requiere_auditoria_humana": true},
+      "resultado_curva": null,
+      "evidencia_skill": {"invocation_id": "nash-sim-002", "skill_path": "skills/build_spot_curve/SKILL.md", "skill_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "skill_status": "REJECTED", "nash_instruction_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+      "advertencias": [], "errores": [{"codigo": "METADATOS_MBONO_FALTANTES", "severidad": "ERROR", "mensaje": "Faltan metadatos financieros obligatorios para el M-Bono."}]
+    }
+  }
+]

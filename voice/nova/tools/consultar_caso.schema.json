@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Nova consultar_caso input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["caso_id"],
+  "properties": {
+    "caso_id": {"type": "string", "pattern": "^YC-[A-Z0-9]{8,32}$", "minLength": 11, "maxLength": 35}
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "evidence_id": "P11 — Skill y loop con corrección",
+  "reproducible_command": "python -m pytest tests/test_security_cost_loop.py -q",
+  "case_id": "YC-SECURITY20260414",
+  "allowlist": ["SIMULATED_VALIDATION"],
+  "v1": {"authorization_valid": false, "state": "BLOQUEADO_SEGURIDAD_O_PRESUPUESTO"},
+  "v2": {"authorization_valid": true, "changed_condition": "aprobacion_humana.estado", "state": "COMPLETADO_SIMULADO"},
+  "costs": {"llm_calls": 0, "tokens_llm": 0, "api_variable_usd": 0.0, "infrastructure_usd": null}
+}

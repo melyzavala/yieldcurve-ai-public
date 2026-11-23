@@ -1,0 +1,14 @@
+{
+  "case_id": "YC-SPOT20260415",
+  "curve_version": "CURVA-SIM-002",
+  "mode": "SIMULADO",
+  "valuation_date": "2026-04-14",
+  "price_basis": "DIRTY",
+  "price_unit": "MXN_PER_100_FACE",
+  "day_count": "ACT/365F",
+  "interpolation_method": "PCHIP_LOG_DISCOUNT_FACTOR",
+  "instruments": [
+    {"instrument_id": "CETES-20270414", "instrument_type": "CETES", "maturity_date": "2027-04-14", "face_value": 100.0, "dirty_price": 91.76},
+    {"instrument_id": "MBONO-RANGO-CF300", "instrument_type": "MBONOS", "maturity_date": "2028-04-14", "face_value": 100.0, "dirty_price": 95.0}
+  ]
+}

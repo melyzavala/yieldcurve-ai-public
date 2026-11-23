@@ -1,0 +1,8 @@
+{
+  "reproducible_command": "python -m pytest tests/test_curve_quality_loop.py::test_second_case_reuse -q",
+  "case_id": "YC-SPOT20260701",
+  "result": "VALIDADA",
+  "build_skill": {"name": "build-spot-curve", "version": "1.0.0", "path": "skills/build_spot_curve/SKILL.md", "sha256": "dfd8b78dc6f2f91e8df8b42552a821348f521e3b70ae167c7d16e63777bf6486"},
+  "validation_skill": {"name": "validate-spot-curve", "version": "1.0.0", "path": "skills/validate_spot_curve/SKILL.md", "sha256": "c80256b7ff26d6f8c64ffbe7a404073196d3b104141adfb5894fc391afb0db92"},
+  "trace_is_independent": true
+}

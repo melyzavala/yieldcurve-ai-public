@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.*
+
+# IDEs, operating systems and temporary files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+*.log
+
+# Private, unreviewed and macro-enabled workbooks
+*.xlsm
+*.xlsx
+*.xls
+
+# Generated local data
+data/private/
+data/raw/
+data/processed/
+web/dist/
+
+# Local n8n exports and setup notes. Only the audited V6 template is public.
+n8n/*.json
+!n8n/YieldCurve_AI_Telegram_Orchestration_V6_API.json
+n8n/*_SETUP.md
+!n8n/YieldCurve_AI_Telegram_Orchestration_V6_API_SETUP.md
+n8n/build_v*.ps1
+n8n/build_v*.js

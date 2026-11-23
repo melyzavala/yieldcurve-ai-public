@@ -1,0 +1,36 @@
+[
+  {
+    "nombre": "datos_validos_simulados",
+    "entrada": {"fecha_corte": "2026-04-14", "series": ["SF45423", "SF45441", "SF45427", "SF45454"]},
+    "salida_esperada": {
+      "estado": "DATOS_VALIDOS", "fecha_corte": "2026-04-14", "modo": "SIMULADO",
+      "fuente": {"proveedor": "Banco de México", "cuadro": "CF300", "recursos": [{"tipo": "CUADRO_SIE", "identificador": "CF300", "series": ["SF45423", "SF45441", "SF45427", "SF45454"]}], "api_base": "https://www.banxico.org.mx/SieAPIRest/service", "consultada_en": null, "datos_mercado": "NO_CONSULTADOS"},
+      "series": [
+        {"serie_id": "SF45423", "instrumento": "CETES", "campo": "PLAZO_DIAS", "etiqueta_oficial": "Cetes 91 días - Plazo", "unidad": "DIAS", "representatividad": "INSTRUMENTO_ON_THE_RUN", "estado": "DISPONIBLE"},
+        {"serie_id": "SF45441", "instrumento": "CETES", "campo": "PRECIO_SUCIO", "etiqueta_oficial": "Cetes 91 días - Precio Sucio", "unidad": "SIN_UNIDAD_PUBLICADA", "representatividad": "INSTRUMENTO_ON_THE_RUN", "estado": "DISPONIBLE"},
+        {"serie_id": "SF45427", "instrumento": "MBONOS", "campo": "PLAZO_DIAS", "etiqueta_oficial": "Bonos 0 a 3 años - Plazo", "unidad": "DIAS", "representatividad": "RANGO_ON_THE_RUN", "requiere_flujos_individuales": true, "estado": "DISPONIBLE"},
+        {"serie_id": "SF45454", "instrumento": "MBONOS", "campo": "PRECIO_SUCIO", "etiqueta_oficial": "Bonos 0 a 3 años - Precio Sucio", "unidad": "SIN_UNIDAD_PUBLICADA", "representatividad": "RANGO_ON_THE_RUN", "requiere_flujos_individuales": true, "estado": "DISPONIBLE"}
+      ],
+      "observaciones": [
+        {"serie_id": "SF45423", "fecha": "2026-04-14", "valor": 90, "unidad": "DIAS", "valida": true},
+        {"serie_id": "SF45441", "fecha": "2026-04-14", "valor": 9.84, "unidad": "SIN_UNIDAD_PUBLICADA", "valida": true},
+        {"serie_id": "SF45427", "fecha": "2026-04-14", "valor": 640, "unidad": "DIAS", "valida": true},
+        {"serie_id": "SF45454", "fecha": "2026-04-14", "valor": 101.2, "unidad": "SIN_UNIDAD_PUBLICADA", "valida": true}
+      ],
+      "resumen_validacion": {"series_solicitadas": 4, "series_con_observacion": 4, "observaciones_validas": 4, "observaciones_rechazadas": 0},
+      "advertencias": [{"codigo": "MBONOS_RANGO", "severidad": "ADVERTENCIA", "mensaje": "Los datos de Bonos M son representativos por rango y no habilitan flujos individuales."}], "errores": []
+    }
+  },
+  {
+    "nombre": "datos_invalidos_duplicados_y_faltantes",
+    "entrada": {"fecha_corte": "2026-04-14", "series": ["SF45423", "SF45441"]},
+    "salida_esperada": {
+      "estado": "DATOS_RECHAZADOS", "fecha_corte": "2026-04-14", "modo": "SIMULADO",
+      "fuente": {"proveedor": "Banco de México", "cuadro": "CF300", "recursos": [{"tipo": "CUADRO_SIE", "identificador": "CF300", "series": ["SF45423", "SF45441"]}], "api_base": "https://www.banxico.org.mx/SieAPIRest/service", "consultada_en": null, "datos_mercado": "NO_CONSULTADOS"},
+      "series": [{"serie_id": "SF45423", "instrumento": "CETES", "campo": "PLAZO_DIAS", "etiqueta_oficial": "Cetes 91 días - Plazo", "unidad": "DIAS", "representatividad": "INSTRUMENTO_ON_THE_RUN", "estado": "RECHAZADA"}],
+      "observaciones": [{"serie_id": "SF45423", "fecha": "2026-04-14", "valor": 90, "unidad": "DIAS", "valida": false}, {"serie_id": "SF45423", "fecha": "2026-04-14", "valor": 90, "unidad": "DIAS", "valida": false}],
+      "resumen_validacion": {"series_solicitadas": 2, "series_con_observacion": 1, "observaciones_validas": 0, "observaciones_rechazadas": 2},
+      "advertencias": [], "errores": [{"codigo": "OBSERVACION_DUPLICADA", "severidad": "ERROR", "mensaje": "Existe una observación duplicada para la misma serie y fecha."}, {"codigo": "SERIE_FALTANTE", "severidad": "ERROR", "mensaje": "Falta una serie solicitada."}]
+    }
+  }
+]

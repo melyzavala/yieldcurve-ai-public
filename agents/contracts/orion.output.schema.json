@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Salida de Orion",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["estado", "caso_id", "version_caso", "version_curva", "modo", "agente", "dictamen_tecnico", "requiere_aprobacion_humana", "expediente", "traza", "consumo", "errores"],
+  "properties": {
+    "estado": {"enum": ["PENDIENTE_APROBACION", "RECHAZADO", "DETENIDO", "ERROR"]},
+    "caso_id": {"type": "string", "pattern": "^YC-[A-Z0-9]{8,32}$"},
+    "version_caso": {"type": "integer", "minimum": 1},
+    "version_curva": {"type": ["string", "null"], "pattern": "^CURVA-[A-Z0-9-]{4,80}$"},
+    "modo": {"const": "SIMULADO"},
+    "agente": {"const": "Orion"},
+    "dictamen_tecnico": {"enum": ["VALIDADO", "RECHAZADO", "NO_EMITIDO"]},
+    "requiere_aprobacion_humana": {"const": true},
+    "expediente": {"type": "object", "additionalProperties": false, "required": ["elara", "siena", "nash", "atenea"], "properties": {"elara": {"type": ["object", "null"]}, "siena": {"type": ["object", "null"]}, "nash": {"type": ["object", "null"]}, "atenea": {"type": ["object", "null"]}}},
+    "traza": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["etapa", "estado"], "properties": {"etapa": {"type": "string"}, "estado": {"type": "string"}, "referencia": {"type": ["string", "null"]}}}},
+    "consumo": {"type": "object", "additionalProperties": false, "required": ["consumo_api_real_usd", "costo_estimado_usd", "costo_infraestructura_usd"], "properties": {"consumo_api_real_usd": {"const": 0.0}, "costo_estimado_usd": {"type": "null"}, "costo_infraestructura_usd": {"type": "null"}}},
+    "errores": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["codigo", "mensaje"], "properties": {"codigo": {"type": "string", "pattern": "^[A-Z0-9_-]+$"}, "mensaje": {"type": "string"}}}}
+  }
+}

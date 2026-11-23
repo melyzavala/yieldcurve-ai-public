@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/melyzavala/yieldcurve-ai/blob/main/agents/contracts/siena.output.schema.json",
+  "title": "Salida de Siena",
+  "description": "Resultado verificable de adquisición y validación de datos de Banxico en modo simulado.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["estado", "fecha_corte", "modo", "fuente", "series", "observaciones", "resumen_validacion", "advertencias", "errores"],
+  "properties": {
+    "estado": {"type": "string", "enum": ["DATOS_VALIDOS", "DATOS_INCOMPLETOS", "DATOS_RECHAZADOS", "ERROR"]},
+    "fecha_corte": {"type": "string", "format": "date"},
+    "modo": {"const": "SIMULADO"},
+    "fuente": {
+      "type": "object", "additionalProperties": false,
+      "required": ["proveedor", "cuadro", "recursos", "api_base", "consultada_en", "datos_mercado"],
+      "properties": {
+        "proveedor": {"const": "Banco de México"},
+        "cuadro": {"const": "CF300"},
+        "recursos": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/recurso"}
+        },
+        "api_base": {"type": "string", "format": "uri"},
+        "consultada_en": {"type": ["string", "null"], "format": "date-time"},
+        "datos_mercado": {"type": "string", "enum": ["REALES", "NO_CONSULTADOS"]}
+      }
+    },
+    "series": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/serie"}
+    },
+    "observaciones": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/observacion"}
+    },
+    "resumen_validacion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["series_solicitadas", "series_con_observacion", "observaciones_validas", "observaciones_rechazadas"],
+      "properties": {
+        "series_solicitadas": {"type": "integer", "minimum": 0},
+        "series_con_observacion": {"type": "integer", "minimum": 0},
+        "observaciones_validas": {"type": "integer", "minimum": 0},
+        "observaciones_rechazadas": {"type": "integer", "minimum": 0}
+      }
+    },
+    "advertencias": {"type": "array", "items": {"$ref": "#/$defs/incidencia"}},
+    "errores": {"type": "array", "items": {"$ref": "#/$defs/incidencia"}},
+    "request_count": {"type": ["integer", "null"], "minimum": 0}
+  },
+  "$defs": {
+    "serie": {
+      "type": "object", "additionalProperties": false,
+      "required": ["serie_id", "instrumento", "campo", "etiqueta_oficial", "unidad", "representatividad", "estado"],
+      "properties": {
+        "serie_id": {"type": "string", "pattern": "^S[FP][0-9]+$"},
+        "instrumento": {"type": "string", "enum": ["CETES", "MBONOS", "FONDEO_GUBERNAMENTAL"]},
+        "campo": {"type": "string", "enum": ["PLAZO_DIAS", "PRECIO_SUCIO", "CUPON_VIGENTE", "TASA_ANUAL"]},
+        "etiqueta_oficial": {"type": "string", "minLength": 1, "maxLength": 200},
+        "unidad": {"type": "string", "enum": ["DIAS", "SIN_UNIDAD_PUBLICADA", "PORCENTAJE"]},
+        "representatividad": {"type": "string", "enum": ["INSTRUMENTO_ON_THE_RUN", "RANGO_ON_THE_RUN", "SERIE_MERCADO"]},
+        "requiere_flujos_individuales": {"type": "boolean"},
+        "estado": {"type": "string", "enum": ["DISPONIBLE", "FALTANTE", "RECHAZADA"]}
+      }
+    },
+    "recurso": {
+      "type": "object", "additionalProperties": false,
+      "required": ["tipo", "identificador", "series"],
+      "properties": {
+        "tipo": {"type": "string", "enum": ["CUADRO_SIE", "SERIE_SIE"]},
+        "identificador": {"type": "string", "pattern": "^(CF300|S[FP][0-9]+)$"},
+        "series": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^S[FP][0-9]+$"}, "uniqueItems": true}
+      }
+    },
+    "observacion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["serie_id", "fecha", "valor", "unidad", "valida"],
+      "properties": {
+        "serie_id": {"type": "string", "pattern": "^S[FP][0-9]+$"},
+        "fecha": {"type": "string", "format": "date"},
+        "valor": {"type": ["number", "null"]},
+        "unidad": {"type": "string", "enum": ["DIAS", "SIN_UNIDAD_PUBLICADA", "PORCENTAJE"]},
+        "valida": {"type": "boolean"}
+      }
+    },
+    "incidencia": {
+      "type": "object", "additionalProperties": false,
+      "required": ["codigo", "severidad", "mensaje"],
+      "properties": {
+        "codigo": {"type": "string", "pattern": "^[A-Z0-9_-]{3,64}$"},
+        "severidad": {"type": "string", "enum": ["INFO", "ADVERTENCIA", "ERROR", "CRITICA"]},
+        "mensaje": {"type": "string", "minLength": 1, "maxLength": 500}
+      }
+    }
+  }
+}

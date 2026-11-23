@@ -1,0 +1,111 @@
+name: Test environment
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - requirements.txt
+      - .python-version
+      - backend/elara_executor.py
+      - backend/run_elara_live.py
+      - backend/banxico_client.py
+      - backend/siena_executor.py
+      - backend/run_siena_live.py
+      - backend/siena_to_excel_adapter.py
+      - backend/run_siena_nash_live.py
+      - backend/run_real_quality_orion_live.py
+      - backend/run_banxico_diagnostic.py
+      - backend/spot_curve.py
+      - backend/build_spot_curve_adapter.py
+      - backend/nash_executor.py
+      - backend/spot_curve_validator.py
+      - backend/validate_spot_curve_adapter.py
+      - backend/atenea_executor.py
+      - backend/curve_quality_loop.py
+      - backend/security_cost_loop.py
+      - backend/orion_executor.py
+      - backend/yieldcurve_pipeline.py
+      - backend/live_dependencies.py
+      - backend/cost_estimator.py
+      - backend/run_yieldcurve_pipeline.py
+      - backend/run_yieldcurve_live.py
+      - backend/api.py
+      - backend/api_models.py
+      - tests/test_environment.py
+      - tests/test_contracts.py
+      - tests/test_elara_executor.py
+      - tests/test_elara_live.py
+      - tests/test_siena.py
+      - tests/test_siena_to_excel_adapter.py
+      - tests/test_siena_nash_atenea.py
+      - tests/test_real_quality_orion.py
+      - tests/fixtures_siena_real_20261111.py
+      - tests/test_banxico_diagnostic.py
+      - tests/test_spot_curve.py
+      - tests/test_nash.py
+      - tests/test_spot_curve_validation.py
+      - tests/test_atenea.py
+      - tests/test_curve_quality_loop.py
+      - tests/test_security_cost_loop.py
+      - tests/test_orion.py
+      - tests/test_yieldcurve_pipeline.py
+      - tests/test_live_dependencies.py
+      - tests/test_api.py
+      - data/demo_banxico_2026-11-11.json
+      - agents/elara.md
+      - agents/siena.md
+      - agents/nash.md
+      - agents/atenea.md
+      - agents/orion.md
+      - loops/**
+      - agents/contracts/**
+      - agents/examples/elara/**
+      - agents/examples/siena/**
+      - agents/examples/nash/**
+      - agents/examples/atenea/**
+      - skills/build_spot_curve/**
+      - skills/validate_spot_curve/**
+      - voice/**
+      - docs/nova-elevenlabs.md
+      - tests/test_nova_spec.py
+      - .github/workflows/test-environment.yml
+      - .github/workflows/test-banxico-diagnostic.yml
+      - .github/workflows/test-siena-nash-live.yml
+      - .github/workflows/test-real-quality-orion.yml
+      - .github/workflows/live-smoke-test.yml
+      - docs/api.md
+      - docs/render-deployment.md
+      - n8n/YieldCurve_AI_Telegram_Orchestration_V6_API.json
+      - n8n/YieldCurve_AI_Telegram_Orchestration_V6_API_SETUP.md
+      - tests/test_n8n_v6_workflow.py
+      - n8n/YieldCurve_AI_Nova_Voice_Gateway_V7.json
+      - n8n/YieldCurve_AI_Nova_Voice_Gateway_V7_SETUP.md
+      - tests/test_n8n_nova_gateway.py
+      - web/export_approved_case.py
+      - tests/test_approved_public_export.py
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest tests -q

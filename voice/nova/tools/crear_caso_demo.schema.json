@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Nova crear_caso_demo input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["fecha_corte"],
+  "properties": {
+    "fecha_corte": {"type": "string", "format": "date"}
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "public_schema_version": "1.0.0",
+  "case_id": "YC-NV01R0XFRU01",
+  "version_caso": null,
+  "version_curva": "CURVA-YC-NV01R0XFRU01-V1-V1",
+  "fecha_corte": "2026-11-11",
+  "execution_mode": "DEMO",
+  "publication_status": "PUBLISHED",
+  "publication_authorized": true,
+  "published_at": "2026-11-23T00:00:00Z",
+  "agentes": {},
+  "fuente": {
+    "source_mode": "FIXTURE_BANXICO_2026-11-11"
+  },
+  "curva": {
+    "metodologia": "EXCEL_BOOTSTRAP_182D_V1",
+    "instrument_count": 10,
+    "max_absolute_repricing_error": 5.799378755000362e-09,
+    "pillars": [
+      {"instrument_id": "C28", "days": 22, "spot_rate": 0.061215779576995324, "observed_price": 9.962168, "recalculated_price": 9.962168, "iterations": 0, "converged": true},
+      {"instrument_id": "C91", "days": 85, "spot_rate": 0.06369703629377282, "observed_price": 9.849535, "recalculated_price": 9.849535, "iterations": 0, "converged": true},
+      {"instrument_id": "C182", "days": 169, "spot_rate": 0.06435869599253852, "observed_price": 9.702206, "recalculated_price": 9.702206, "iterations": 0, "converged": true},
+      {"instrument_id": "C364", "days": 337, "spot_rate": 0.06786175352437335, "observed_price": 9.393273, "recalculated_price": 9.393273, "iterations": 0, "converged": true},
+      {"instrument_id": "C2Y", "days": 687, "spot_rate": 0.07644480580101735, "observed_price": 8.70596, "recalculated_price": 8.70596, "iterations": 0, "converged": true},
+      {"instrument_id": "MBONO_0_3", "days": 1205, "spot_rate": 0.08094906318001449, "observed_price": 102.964751, "recalculated_price": 102.96475099622552, "iterations": 32, "converged": true},
+      {"instrument_id": "MBONO_3_5", "days": 1982, "spot_rate": 0.087427856575232, "observed_price": 97.805938, "recalculated_price": 97.80593799655813, "iterations": 34, "converged": true},
+      {"instrument_id": "MBONO_7_10", "days": 3389, "spot_rate": 0.09482458786806092, "observed_price": 94.005726, "recalculated_price": 94.00572600379842, "iterations": 34, "converged": true},
+      {"instrument_id": "MBONO_10_20", "days": 5846, "spot_rate": 0.10270057077286765, "observed_price": 87.43698, "recalculated_price": 87.43698000579938, "iterations": 34, "converged": true},
+      {"instrument_id": "MBONO_20_30", "days": 10396, "spot_rate": 0.10530454153195024, "observed_price": 85.852819, "recalculated_price": 85.85281900141196, "iterations": 31, "converged": true}
+    ]
+  },
+  "auditoria": {
+    "tecnicamente_valida": true,
+    "tolerancia": 1e-08
+  },
+  "costos": {}
+}
