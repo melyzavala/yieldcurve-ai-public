@@ -10,6 +10,8 @@ def test_cost_estimate_separates_uncached_cached_and_output_tokens() -> None:
     rates = {
         "input": Decimal("0.10"),
         "cached_input": Decimal("0.01"),
+        "cache_write_30m": Decimal("0.125"),
+        "cache_write_12h": Decimal("0.25"),
         "output": Decimal("0.50"),
     }
 
@@ -19,8 +21,11 @@ def test_cost_estimate_separates_uncached_cached_and_output_tokens() -> None:
     )
 
     assert estimate == {
+        "uncached_input_tokens": "60",
         "input_uncached_usd": "0.000006",
         "input_cached_usd": "4E-7",
+        "cache_write_30m_usd": "0.000",
+        "cache_write_12h_usd": "0.00",
         "output_usd": "0.00001",
         "total_usd": "0.0000164",
     }
@@ -36,5 +41,7 @@ def test_tariffs_and_expected_live_output_are_verified() -> None:
 
     assert rates["input"] == Decimal("0.10")
     assert rates["cached_input"] == Decimal("0.01")
+    assert rates["cache_write_30m"] == Decimal("0.125")
+    assert rates["cache_write_12h"] == Decimal("0.25")
     assert rates["output"] == Decimal("0.50")
     assert expectations_met(output) is True

@@ -52,6 +52,9 @@ class InvocationRecord:
     error_code: str | None = None
     error_message: str | None = None
     cached_input_tokens: int | None = None
+    cache_write_tokens: int | None = None
+    ttl_30m_tokens: int | None = None
+    ttl_12h_tokens: int | None = None
     validation_diagnostic: dict[str, str] | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -431,6 +434,7 @@ class ElaraExecutor:
     ) -> InvocationRecord:
         usage = getattr(response, "usage", None)
         input_details = getattr(usage, "input_tokens_details", None)
+        cache_write_details = getattr(input_details, "cache_write_tokens_details", None)
         return InvocationRecord(
             model=self.model,
             response_id=getattr(response, "id", None),
@@ -441,6 +445,9 @@ class ElaraExecutor:
             error_code=error_code,
             error_message=error_message,
             cached_input_tokens=getattr(input_details, "cached_tokens", None),
+            cache_write_tokens=getattr(input_details, "cache_write_tokens", getattr(input_details, "cache_creation_tokens", None)),
+            ttl_30m_tokens=getattr(cache_write_details, "ttl_30m_tokens", None),
+            ttl_12h_tokens=getattr(cache_write_details, "ttl_12h_tokens", None),
             validation_diagnostic=validation_diagnostic,
         )
 

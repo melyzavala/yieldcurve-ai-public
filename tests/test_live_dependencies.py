@@ -139,8 +139,10 @@ def test_live_keeps_identifiers_and_exposes_sanitized_measured_telemetry() -> No
     assert result["fecha_corte"] == "2026-11-11"
     assert result["modo"] == "SIMULADO"
     assert result["telemetria"]["elara"] == {
-        "agente": "Elara", "proveedor": "OpenAI", "modelo": "gpt-6-luna", "response_id": "resp-test",
-        "input_tokens": 100, "cached_input_tokens": 10, "output_tokens": 20, "duracion_ms": 11,
+        "agente": "Elara", "proveedor": "OpenAI", "modelo": "gpt-6-luna", "model": "gpt-6-luna", "response_id": "resp-test",
+        "input_tokens": 100, "cached_input_tokens": 10, "output_tokens": 20, "total_tokens": 120,
+        "cache_write_tokens": None, "ttl_30m_tokens": None, "ttl_12h_tokens": None,
+        "duracion_ms": 11, "cost_usd": 0.0000191, "cost_status": "ESTIMATED_FROM_VERIFIED_RATE",
         "status": "VALID", "error_code": None, "diagnostico_validacion": None,
     }
     assert result["consumo"]["consumo_medido"]["input_tokens"] == 100

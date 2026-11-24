@@ -71,6 +71,7 @@ def test_valid_acceptance_uses_structured_outputs_and_records_usage() -> None:
     assert result.record.input_tokens == 21
     assert result.record.output_tokens == 13
     assert result.record.cached_input_tokens == 4
+    assert result.record.cache_write_tokens is None
     assert request["max_output_tokens"] == MAX_OUTPUT_TOKENS
     assert request["reasoning"] == {"effort": "low"}
     assert request["store"] is False
@@ -80,6 +81,18 @@ def test_valid_acceptance_uses_structured_outputs_and_records_usage() -> None:
     assert schema["required"] == ["payload"]
     assert len(schema["properties"]["payload"]["anyOf"]) == 3
     assert "tools" not in request
+
+
+def test_usage_records_cache_write_tokens_when_the_provider_reports_them() -> None:
+    expected = load_expected_output("solicitud_valida.json")
+    usage = SimpleNamespace(input_tokens=21, output_tokens=13, input_tokens_details=SimpleNamespace(cached_tokens=4, cache_write_tokens=2, cache_write_tokens_details=SimpleNamespace(ttl_30m_tokens=2, ttl_12h_tokens=0)))
+    executor, _ = executor_for(transport(expected), usage=usage)
+
+    result = executor.run("Construye una curva con CETES y M-Bonos al 14/04/2026.")
+
+    assert result.record.cache_write_tokens == 2
+    assert result.record.ttl_30m_tokens == 2
+    assert result.record.ttl_12h_tokens == 0
 
 
 def test_incomplete_request_output_is_valid_contract_result() -> None:

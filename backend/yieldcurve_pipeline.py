@@ -19,7 +19,7 @@ from backend.guardrails import preflight_user_request, valid_siena_for_downstrea
 from backend.orion_executor import execute_orion
 from backend.security_cost_loop import run_security_cost_loop
 from backend.siena_to_excel_adapter import SienaToExcelAdapterError, build_excel_payload_from_siena
-from backend.cost_estimator import estimate_cost_usd, model_rates
+from backend.cost_estimator import CostEstimationError, estimate_cost_usd, model_rates
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -155,13 +155,19 @@ def _case_is_valid(case: dict[str, Any]) -> bool:
         return False
 
 
-def _elara_telemetry(record: InvocationRecord) -> dict[str, Any]:
+def _elara_telemetry(record: InvocationRecord, execution_mode: str, consumption: dict[str, Any]) -> dict[str, Any]:
     """Expone únicamente telemetría de uso que no contiene credenciales."""
+    total_tokens = record.input_tokens + record.output_tokens if isinstance(record.input_tokens, int) and isinstance(record.output_tokens, int) else None
+    estimate = consumption.get("componentes_estimados_usd") if isinstance(consumption, dict) else None
     return {
-        "agente": "Elara", "proveedor": "OpenAI", "modelo": record.model,
+        "agente": "Elara", "proveedor": "OpenAI", "modelo": record.model, "model": record.model,
         "response_id": record.response_id, "input_tokens": record.input_tokens,
         "cached_input_tokens": record.cached_input_tokens,
-        "output_tokens": record.output_tokens, "duracion_ms": record.duration_ms,
+        "output_tokens": record.output_tokens, "total_tokens": total_tokens,
+        "cache_write_tokens": record.cache_write_tokens, "ttl_30m_tokens": record.ttl_30m_tokens,
+        "ttl_12h_tokens": record.ttl_12h_tokens, "duracion_ms": record.duration_ms,
+        "cost_usd": float(estimate["total_usd"]) if isinstance(estimate, dict) and estimate.get("total_usd") is not None else None,
+        "cost_status": "ESTIMATED_FROM_VERIFIED_RATE" if isinstance(estimate, dict) else consumption.get("cost_status", "NOT_OBSERVED_DEMO" if execution_mode == "DEMO" else "USAGE_UNAVAILABLE"),
         "status": record.status, "error_code": record.error_code,
         "diagnostico_validacion": record.validation_diagnostic,
     }
@@ -169,16 +175,23 @@ def _elara_telemetry(record: InvocationRecord) -> dict[str, Any]:
 
 def _consumption(execution_mode: str, record: InvocationRecord) -> dict[str, Any]:
     if execution_mode == "DEMO":
-        return {"consumo_api_real_usd": 0.0, "costo_estimado_usd": None, "costo_infraestructura_usd": None}
+        return {"consumo_api_real_usd": 0.0, "costo_estimado_usd": None, "costo_infraestructura_usd": None, "cost_status": "NOT_OBSERVED_DEMO"}
     measured = {
         "modelo": record.model, "input_tokens": record.input_tokens,
         "cached_input_tokens": record.cached_input_tokens,
         "output_tokens": record.output_tokens,
+        "total_tokens": record.input_tokens + record.output_tokens if isinstance(record.input_tokens, int) and isinstance(record.output_tokens, int) else None,
+        "cache_write_tokens": record.cache_write_tokens,
+        "ttl_30m_tokens": record.ttl_30m_tokens,
+        "ttl_12h_tokens": record.ttl_12h_tokens,
     }
     estimate: dict[str, str] | None = None
     try:
         if record.status == "VALID":
             estimate = estimate_cost_usd(record.to_dict(), model_rates(ROOT / "costs" / "tarifas.csv", record.model))
+    except CostEstimationError as error:
+        return {"consumo_api_real_usd": None, "costo_estimado_usd": None, "costo_infraestructura_usd": None,
+                "consumo_medido": measured, "componentes_estimados_usd": None, "cost_status": error.code}
     except (OSError, ValueError):
         estimate = None
     return {
@@ -187,6 +200,7 @@ def _consumption(execution_mode: str, record: InvocationRecord) -> dict[str, Any
         "costo_infraestructura_usd": None,
         "consumo_medido": measured,
         "componentes_estimados_usd": estimate,
+        "cost_status": "ESTIMATED_FROM_VERIFIED_RATE" if estimate else "PRICING_UNAVAILABLE",
     }
 
 
@@ -238,8 +252,8 @@ def run_yieldcurve_case(
         return _output(case, execution_mode, estado="DETENIDO", dictamen="NO_EMITIDO", traza=trace, errores=[_issue("DEPENDENCIA_ELARA_REQUERIDA", "LIVE requiere un ejecutor de Elara inyectado por una interfaz autenticada.")])
     result: ElaraResult = executor.run(solicitud, trusted_context=_trusted_elara_context(case))
     elara = result.output
-    telemetria = {"elara": _elara_telemetry(result.record)}
     consumo_elara = _consumption(execution_mode, result.record)
+    telemetria = {"elara": _elara_telemetry(result.record, execution_mode, consumo_elara)}
     trace.append({"etapa": "elara", "estado": result.record.status})
     if not isinstance(elara, dict):
         code = "ELARA_API_ERROR" if result.record.status == "API_ERROR" else "ELARA_NO_DISPONIBLE"
