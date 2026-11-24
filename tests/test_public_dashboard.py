@@ -58,6 +58,10 @@ def test_dashboard_visual_structure_is_present_and_static():
  assert "curva.pillars" in js and "sin interpolación" in js and "fetch('data/cases.json')" in js
  for weight in ("400","500","600","700"): assert (source/f"fonts/poppins-{weight}.ttf").exists()
  assert not any(token in (html+css+js).lower() for token in FORBIDDEN)
+def test_nova_widget_embed_is_public_and_contains_no_credentials():
+ html=(ROOT/"web/src/index.html").read_text(encoding="utf-8")
+ for required in ("elevenlabs-convai","agent_7101m7tg0v24frcrz2prz18ya72n","https://unpkg.com/@elevenlabs/convai-widget-embed"): assert required in html
+ for forbidden in ("xi-api-key","X-YieldCurve-Voice-Key","X-YieldCurve-Key","Authorization: Bearer"): assert forbidden not in html
 def test_vizdata_history_filters_and_three_kpis_are_static_public_presentation():
  source=build();html=(source/"index.html").read_text(encoding="utf-8");js=(source/"app.js").read_text(encoding="utf-8");workflow=(Path(".github/workflows/pages.yml").read_text(encoding="utf-8"))
  assert html.count('class="kpi"')==3
