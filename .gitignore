@@ -46,10 +46,12 @@ data/raw/
 data/processed/
 web/dist/
 
-# Local n8n exports and setup notes. Only the audited V6 template is public.
+# Local n8n exports and setup notes. Only audited V6/V7 templates are public.
 n8n/*.json
 !n8n/YieldCurve_AI_Telegram_Orchestration_V6_API.json
+!n8n/YieldCurve_AI_Nova_Voice_Gateway_V7.json
 n8n/*_SETUP.md
 !n8n/YieldCurve_AI_Telegram_Orchestration_V6_API_SETUP.md
+!n8n/YieldCurve_AI_Nova_Voice_Gateway_V7_SETUP.md
 n8n/build_v*.ps1
 n8n/build_v*.js
