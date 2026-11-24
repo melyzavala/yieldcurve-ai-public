@@ -62,3 +62,23 @@ class OrionRunResponse(BaseModel):
     telemetria: dict[str, Any]
     cost_trace: dict[str, Any]
     case_artifact: dict[str, Any]
+
+
+class PersistedApprovalEvidence(BaseModel):
+    """Minimal persisted state required to authorize a public LIVE projection."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    caso_id: str = Field(pattern=r"^YC-[A-Z0-9]{8,32}$")
+    version_caso: int = Field(ge=1)
+    estado: str
+    approval_status: str
+
+
+class LivePublicArtifactRequest(BaseModel):
+    """Server-to-server input; the response never returns this private evidence."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    case_artifact: dict[str, Any]
+    approval_evidence: PersistedApprovalEvidence

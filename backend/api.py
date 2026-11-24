@@ -9,12 +9,13 @@ from typing import Any
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.responses import Response
 
-from backend.api_models import ExecutionMode, OrionRunRequest, OrionRunResponse
+from backend.api_models import ExecutionMode, LivePublicArtifactRequest, OrionRunRequest, OrionRunResponse
 from backend.live_dependencies import LiveDependencyError, build_live_elara, build_live_siena_provider
 from backend.yieldcurve_pipeline import run_yieldcurve_case
 from backend.case_artifacts import build_case_artifact, build_cost_trace
 from backend.case_excel import build_case_workbook
 from backend.curve_visualization import build_curve_png
+from backend.public_artifacts import build_approved_live_public_case_artifact, validate_public_case
 
 
 SERVICE_VERSION = "0.1.0"
@@ -159,6 +160,20 @@ def sanitize_pipeline_result(result: dict[str, Any], invocation_id: str | None =
 def health() -> dict[str, str]:
     """Disponibilidad del transporte HTTP; no invoca el pipeline ni dependencias."""
     return {"status": "ok", "service": "yieldcurve-ai", "version": SERVICE_VERSION}
+
+
+@app.post("/v1/artifacts/public/live", dependencies=[Depends(require_api_key)])
+def build_live_public_artifact(request: LivePublicArtifactRequest) -> dict[str, Any]:
+    """Returns a validated, allowlisted LIVE artifact; it never writes to GitHub."""
+    try:
+        public = build_approved_live_public_case_artifact(
+            request.case_artifact,
+            request.approval_evidence.model_dump(mode="python"),
+        )
+        validate_public_case(public)
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(error)) from None
+    return public
 
 @app.post("/v1/artifacts/excel", dependencies=[Depends(require_api_key)])
 def build_excel(case_artifact: dict[str, Any]) -> Response:

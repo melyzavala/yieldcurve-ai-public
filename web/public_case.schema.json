@@ -11,7 +11,7 @@
     "version_caso": {"type": ["string", "integer", "null"]},
     "version_curva": {"type": ["string", "integer", "null"]},
     "fecha_corte": {"type": ["string", "null"]},
-    "execution_mode": {"const": "DEMO"},
+    "execution_mode": {"enum": ["DEMO", "LIVE"]},
     "publication_status": {"const": "PUBLISHED"},
     "publication_authorized": {"const": true},
     "published_at": {"type": "string", "format": "date-time"},
@@ -30,5 +30,17 @@
     },
     "auditoria": {"type": ["object", "null"]},
     "costos": {"type": "object"}
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"execution_mode": {"const": "LIVE"}}},
+      "then": {
+        "properties": {
+          "fuente": {
+            "properties": {"source_mode": {"const": "BANXICO_SIE_LIVE"}}
+          }
+        }
+      }
+    }
+  ]
 }

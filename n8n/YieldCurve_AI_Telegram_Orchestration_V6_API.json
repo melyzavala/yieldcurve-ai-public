@@ -3,6 +3,50 @@
   "nodes": [
     {
       "parameters": {
+        "rules": {"values": [{"conditions": {"conditions": [{"leftValue": "={{ $json.publication_action }}", "rightValue": "CREATE", "operator": {"type": "string", "operation": "equals"}}]}, "renameOutput": true, "outputKey": "create"}]},
+        "options": {"fallbackOutput": "noop"}
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100018",
+      "name": "Route GitHub publication action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [11104, 2320]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item=$input.first().json; const ctx=item.public_case ? item : $('Decide idempotent GitHub publication').first().json; const failed=Boolean(item.error)||ctx.publication_action==='ERROR'; const id=ctx.case_id; return [{json:{...ctx,reply:failed?`Caso ${id} aprobado por decisión humana. La publicación no pudo completarse.`:`Caso ${id} aprobado por decisión humana y enviado a publicación.`}}];"
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100019",
+      "name": "Prepare publication result message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [11568, 2320]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Normalize safe Telegram event').first().json.telegram_chat_id }}",
+        "text": "={{ $json.reply }}",
+        "additionalFields": {"appendAttribution": false}
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100020",
+      "name": "Telegram | Send publication result",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [11808, 2320],
+      "credentials": {"telegramApi": {"id": "__YC_TELEGRAM_CREDENTIAL__", "name": "__YC_TELEGRAM_CREDENTIAL__"}}
+    },
+    {
+      "parameters": {
+        "jsCode": "const decision=$('Guard status callback and expiry').first().json; return decision.new_state==='APROBADA_HUMANAMENTE' ? [{json:decision}] : [];"
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100009",
+      "name": "Route approved decision to publication",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [9248, 2320]
+    },
+    {
+      "parameters": {
         "jsCode": "const current = $input.first()?.json ?? {};\n\nlet apiResult = {};\n\ntry {\n  const raw = current.api_result_json;\n\n  apiResult =\n    typeof raw === 'string'\n      ? JSON.parse(raw)\n      : (raw ?? {});\n} catch (error) {\n  throw new Error(\n    'No se pudo interpretar api_result_json del caso persistido.'\n  );\n}\n\nconst caseArtifact = apiResult.case_artifact;\n\nif (\n  !caseArtifact ||\n  typeof caseArtifact !== 'object' ||\n  Array.isArray(caseArtifact)\n) {\n  throw new Error(\n    'El caso persistido no contiene un case_artifact válido.'\n  );\n}\n\nreturn [\n  {\n    json: {\n      ...current,\n      case_artifact: caseArtifact,\n    },\n  },\n];"
       },
       "id": "4c3e7bbd-7147-4d41-8d10-a60000100001",
@@ -10,6 +54,115 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [10320, 2140]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {"__rl": true, "value": "__YC_CASES_TABLE_ID__", "mode": "list"},
+        "matchType": "allConditions",
+        "filters": {"conditions": [
+          {"keyName": "caso_id", "keyValue": "={{ $('Guard status callback and expiry').first().json.case_row.caso_id }}"},
+          {"keyName": "version_caso", "keyValue": "={{ $('Guard status callback and expiry').first().json.case_row.version_caso }}"}
+        ]}
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100010",
+      "name": "YC_CASES | Reload approved case",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [9440, 2320]
+    },
+    {
+      "parameters": {
+        "jsCode": "const persisted=$input.first().json; const original=$('Guard status callback and expiry').first().json.case_row; if (persisted.caso_id!==original.caso_id || String(persisted.version_caso)!==String(original.version_caso) || persisted.estado!=='APROBADA_HUMANAMENTE' || persisted.approval_status!=='APPROVED') throw new Error('PUBLICATION_APPROVAL_NOT_PERSISTED'); return [{json:{...persisted,approval_evidence:{caso_id:persisted.caso_id,version_caso:persisted.version_caso,estado:persisted.estado,approval_status:persisted.approval_status}}}];"
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100011",
+      "name": "Validate persisted approval for publication",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [9664, 2320]
+    },
+    {
+      "parameters": {
+        "jsCode": "const row=$input.first().json; let api; try { api=typeof row.api_result_json==='string'?JSON.parse(row.api_result_json):row.api_result_json; } catch { throw new Error('PUBLICATION_API_RESULT_INVALID'); } const artifact=api?.case_artifact; if (!artifact || typeof artifact!=='object' || artifact.caso_id!==row.caso_id || String(artifact.version_caso)!==String(row.version_caso)) throw new Error('PUBLICATION_ARTIFACT_MISMATCH'); return [{json:{...row,case_artifact:artifact}}];"
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100012",
+      "name": "Parse original technical artifact",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [9904, 2320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://yieldcurve-ai.onrender.com/v1/artifacts/public/live",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({case_artifact:$json.case_artifact,approval_evidence:$json.approval_evidence}) }}",
+        "options": {"timeout": 30000, "retry": {"maxTries": 1}}
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100013",
+      "name": "Build sanitized LIVE public artifact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [10144, 2320],
+      "credentials": {"httpHeaderAuth": {"id": "__YC_RENDER_AUTH__", "name": "__YC_RENDER_AUTH__"}}
+    },
+    {
+      "parameters": {
+        "jsCode": "const publicCase=$input.first().json; const row=$('Validate persisted approval for publication').first().json; if (publicCase.case_id!==row.caso_id || String(publicCase.version_caso)!==String(row.version_caso) || publicCase.execution_mode!=='LIVE' || publicCase.publication_authorized!==true || publicCase.fuente?.source_mode!=='BANXICO_SIE_LIVE') throw new Error('PUBLICATION_PUBLIC_ARTIFACT_INVALID'); return [{json:{public_case:publicCase,case_id:row.caso_id,version_caso:row.version_caso}}];"
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100014",
+      "name": "Validate public artifact identity",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [10384, 2320]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://api.github.com/repos/melyzavala/yieldcurve-ai-public/contents/data/public/cases/' + $json.case_id + '.json?ref=main' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {"response": {"response": {"neverError": true}}, "retry": {"maxTries": 1}}
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100015",
+      "name": "GitHub | Get public case",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [10624, 2320],
+      "continueOnFail": true,
+      "credentials": {"httpHeaderAuth": {"id": "__YC_GITHUB_AUTH__", "name": "__YC_GITHUB_AUTH__"}}
+    },
+    {
+      "parameters": {
+        "jsCode": "const lookup=$input.first().json; const ctx=$('Validate public artifact identity').first().json; const canonical=value=>Array.isArray(value)?'['+value.map(canonical).join(',')+']':value&&typeof value==='object'?'{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+canonical(value[key])).join(',')+'}':JSON.stringify(value); const wanted=canonical(ctx.public_case); const code=lookup.statusCode||lookup.status||lookup.error?.cause?.response?.status||0; if (code===404 || lookup.message==='Not Found' || lookup.error?.message?.includes('404')) return [{json:{...ctx,publication_action:'CREATE'}}]; if (!lookup.content) return [{json:{...ctx,publication_action:'ERROR',publication_error:'GITHUB_LOOKUP_FAILED'}}]; let existing; try { existing=JSON.parse(Buffer.from(String(lookup.content).replace(/\\n/g,''),'base64').toString('utf8')); } catch { throw new Error('GITHUB_PUBLIC_CASE_INVALID'); } if (String(existing.version_caso)!==String(ctx.version_caso)) throw new Error('GITHUB_PUBLIC_CASE_VERSION_CONFLICT'); if (canonical(existing)!==wanted) throw new Error('GITHUB_PUBLIC_CASE_CONTENT_CONFLICT'); return [{json:{...ctx,publication_action:'NOOP'}}];"
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100016",
+      "name": "Decide idempotent GitHub publication",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [10864, 2320]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ 'https://api.github.com/repos/melyzavala/yieldcurve-ai-public/contents/data/public/cases/' + $json.case_id + '.json' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({message:'publish: approved live case '+$json.case_id+' v'+$json.version_caso,branch:'main',content:Buffer.from(JSON.stringify($json.public_case,null,2)+'\\n').toString('base64')}) }}",
+        "options": {"retry": {"maxTries": 1}}
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100017",
+      "name": "GitHub | Create approved LIVE case",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [11328, 2320],
+      "continueOnFail": true,
+      "credentials": {"httpHeaderAuth": {"id": "__YC_GITHUB_AUTH__", "name": "__YC_GITHUB_AUTH__"}}
     },
     {
       "parameters": {
@@ -3017,10 +3170,27 @@
             "node": "Telegram | Answer callback",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Route approved decision to publication",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
     },
+    "Route approved decision to publication": {"main": [[{"node": "YC_CASES | Reload approved case", "type": "main", "index": 0}]]},
+    "YC_CASES | Reload approved case": {"main": [[{"node": "Validate persisted approval for publication", "type": "main", "index": 0}]]},
+    "Validate persisted approval for publication": {"main": [[{"node": "Parse original technical artifact", "type": "main", "index": 0}]]},
+    "Parse original technical artifact": {"main": [[{"node": "Build sanitized LIVE public artifact", "type": "main", "index": 0}]]},
+    "Build sanitized LIVE public artifact": {"main": [[{"node": "Validate public artifact identity", "type": "main", "index": 0}]]},
+    "Validate public artifact identity": {"main": [[{"node": "GitHub | Get public case", "type": "main", "index": 0}]]},
+    "GitHub | Get public case": {"main": [[{"node": "Decide idempotent GitHub publication", "type": "main", "index": 0}]]},
+    "Decide idempotent GitHub publication": {"main": [[{"node": "Route GitHub publication action", "type": "main", "index": 0}]]},
+    "Route GitHub publication action": {"main": [[{"node": "GitHub | Create approved LIVE case", "type": "main", "index": 0}], [{"node": "Prepare publication result message", "type": "main", "index": 0}]]},
+    "GitHub | Create approved LIVE case": {"main": [[{"node": "Prepare publication result message", "type": "main", "index": 0}]]},
+    "Prepare publication result message": {"main": [[{"node": "Telegram | Send publication result", "type": "main", "index": 0}]]},
+    "Telegram | Send publication result": {"main": [[]]},
     "YC_ACCESS_CODES | Load access code": {
       "main": [
         [
