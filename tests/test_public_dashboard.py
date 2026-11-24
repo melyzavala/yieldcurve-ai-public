@@ -55,7 +55,7 @@ def test_dashboard_visual_structure_is_present_and_static():
  source=build();html=(source/"index.html").read_text(encoding="utf-8");css=(source/"styles.css").read_text(encoding="utf-8");js=(source/"app.js").read_text(encoding="utf-8")
  for required in ("@font-face","Poppins,Arial,sans-serif","context-bar","kpi-grid","dashboard-grid--primary","agent-list","fact-list","cost-summary","@media(max-width:540px)"): assert required in css or required in html
  for required in ("caseSelect","kpis","chart","agents","audit","costs","download"): assert f'id=\"{required}\"' in html
- assert "curva.pillars" in js and "sin interpolación" in js and "fetch('data/cases.json')" in js
+ assert "curva?.pillars" in js and "sin interpolación" in js and "fetch('data/cases.json')" in js
  for weight in ("400","500","600","700"): assert (source/f"fonts/poppins-{weight}.ttf").exists()
  assert not any(token in (html+css+js).lower() for token in FORBIDDEN)
 def test_nova_widget_embed_is_public_and_contains_no_credentials():
@@ -69,3 +69,14 @@ def test_vizdata_history_filters_and_three_kpis_are_static_public_presentation()
  assert "Auditoría técnica válida" in js and "No se encontraron casos con los filtros seleccionados." in js and "Restablecer filtros" in html
  assert "filteredCases" in js and "renderHistory" in js and "selectCase" in js
  assert "enablement:" not in workflow and "actions/configure-pages@v5" in workflow and "web/generate_demo.py" not in workflow
+
+def test_interactive_curve_uses_all_published_pillars_and_human_utc_dates():
+ source=build();js=(source/"app.js").read_text(encoding="utf-8");html=(source/"index.html").read_text(encoding="utf-8");css=(source/"curve.css").read_text(encoding="utf-8")
+ cases=json.loads((source/"data/cases.json").read_text(encoding="utf-8"));pillars=cases[0]["curva"]["pillars"]
+ assert len(pillars)==10 and all("instrument_id" in pillar for pillar in pillars)
+ assert ".sort((a,b)=>a.days-b.days)" in js and ".join(' ')" in js
+ assert "points=p.map(v=>`${sx(v.days)},${sy(v.spot_rate*100)}`).join(' ')" in js
+ assert "data-pillar" in js and "mouseenter" in js and "keydown" in js and "pillarDetail" in js
+ assert "formatDate" in js and "timeZone:'UTC'" in js and "${formatDate(c.published_at)}" in js
+ assert "aria-live=\"polite\"" in html and "Pilares publicados; la visualización no interpola ni recalcula las tasas." in html
+ assert ".chart-point:focus-visible" in css and not any(token in (html+js+css).lower() for token in FORBIDDEN)

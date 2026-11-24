@@ -13,7 +13,7 @@ def build():
  for path in sorted(src.glob("*.json")):
   case=json.loads(path.read_text(encoding="utf-8")); validate_public_case(case); cases.append(case); (dist/"downloads"/f"YieldCurve_{case['case_id']}.xlsx").write_bytes(build_case_workbook(adapt(case),include_private_decision=False))
  (dist/"data/cases.json").write_text(json.dumps(cases,ensure_ascii=False,indent=2),encoding="utf-8")
- for name in ("index.html","styles.css","vizdata.css","app.js"): shutil.copy2(ROOT/"web/src"/name,dist/name)
+ for name in ("index.html","styles.css","vizdata.css","curve.css","app.js"): shutil.copy2(ROOT/"web/src"/name,dist/name)
  shutil.copytree(ROOT/"web/src/fonts",dist/"fonts",dirs_exist_ok=True)
  shutil.copy2(ROOT/"web/public_case.schema.json",dist/"data/public_case.schema.json")
  text=" ".join(p.read_text(encoding="utf-8",errors="ignore").lower() for p in dist.rglob("*") if p.is_file() and p.suffix!=".xlsx")
