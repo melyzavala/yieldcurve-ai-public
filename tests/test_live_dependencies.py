@@ -163,6 +163,15 @@ def test_live_requires_one_llm_call_limit_before_elara() -> None:
     assert fake.calls == 0
 
 
+def test_live_executes_exactly_one_llm_invocation() -> None:
+    fake = FakeElara(accepted_elara())
+
+    result = run_live(fake, load_demo_siena)
+
+    assert result["estado"] == "PENDIENTE_APROBACION"
+    assert fake.calls == 1
+
+
 def test_demo_live_comparison_reports_equal_mocked_market_data_and_pillars() -> None:
     live_result = run_live(FakeElara(accepted_elara()), load_demo_siena)
     demo_result = run_yieldcurve_case(

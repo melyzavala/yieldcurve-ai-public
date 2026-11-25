@@ -216,3 +216,32 @@ def test_v6_routes_errors_callbacks_and_status_without_backend_reexecution() -> 
     assert destinations(workflow, "Route non-allowed callback", 0) == {"Telegram | Answer callback"}
     assert destinations(workflow, "Route expired response", 0) == {"Telegram | Answer callback"}
     assert "Invoke YieldCurve API once" not in json.dumps(connections["YC_CASES | Load case"])
+
+
+def test_v6_publication_requires_persisted_approved_state_and_routes_create_idempotently() -> None:
+    workflow = load_workflow()
+    nodes = nodes_by_name(workflow)
+
+    assert destinations(workflow, "YC_CASES | Persist allowed decision") == {
+        "Telegram | Answer callback", "Route approved decision to publication",
+    }
+    assert destinations(workflow, "Route approved decision to publication") == {"YC_CASES | Reload approved case"}
+    validate = nodes["Validate persisted approval for publication"]["parameters"]["jsCode"]
+    for required in ("APROBADA_HUMANAMENTE", "APPROVED", "PUBLICATION_APPROVAL_NOT_PERSISTED"):
+        assert required in validate
+    assert destinations(workflow, "Route GitHub publication action", 0) == {"Prepare GitHub publication payload"}
+    assert destinations(workflow, "Route GitHub publication action", 1) == {"Prepare publication result message"}
+    assert nodes["GitHub | Create approved LIVE case"]["parameters"]["jsonBody"] == "={{ $json.github_body }}"
+
+
+def test_v6_persisted_decision_uses_pending_state_as_compare_and_set_guard() -> None:
+    node = nodes_by_name(load_workflow())["YC_CASES | Persist allowed decision"]
+    conditions = node["parameters"]["filters"]["conditions"]
+    guards = {condition["keyName"]: condition["keyValue"] for condition in conditions}
+
+    assert guards == {
+        "caso_id": "={{ $json.case_row.caso_id }}",
+        "version_caso": "={{ $json.case_row.version_caso }}",
+        "estado": "PENDIENTE_APROBACION",
+        "approval_status": "PENDING",
+    }
