@@ -67,11 +67,18 @@ def test_nova_widget_embed_is_public_and_contains_no_credentials():
  for forbidden in ("xi-api-key","X-YieldCurve-Voice-Key","X-YieldCurve-Key","Authorization: Bearer"): assert forbidden not in html
 def test_vizdata_history_filters_and_three_kpis_are_static_public_presentation():
  source=build();html=(source/"index.html").read_text(encoding="utf-8");js=(source/"app.js").read_text(encoding="utf-8");workflow=(Path(".github/workflows/pages.yml").read_text(encoding="utf-8"))
- assert html.count('class="kpi"')==3
- for identifier in ("instrument_count","max_absolute_repricing_error","total_variable_cost_usd","auditBadge","historyRows","modeFilter","dateFrom","dateTo","resetFilters"): assert identifier in js or identifier in html
+ assert 'id="kpiTitle"' in html and "Indicadores de desempeño" in html
+ for identifier in ("instrument_count","max_absolute_repricing_error","known_cost_usd","costDisplay","auditBadge","historyRows","modeFilter","dateFrom","dateTo","resetFilters"): assert identifier in js or identifier in html
  assert "Auditoría técnica válida" in js and "No se encontraron casos con los filtros seleccionados." in js and "Restablecer filtros" in html
  assert "filteredCases" in js and "renderHistory" in js and "selectCase" in js
  assert "enablement:" not in workflow and "actions/configure-pages@v5" in workflow and "web/generate_demo.py" not in workflow
+
+def test_cost_and_kpi_presentation_uses_published_semantics_and_human_labels():
+ source=build();js=(source/"app.js").read_text(encoding="utf-8");html=(source/"index.html").read_text(encoding="utf-8")
+ assert "known_cost_usd" in js and "Pricing parcial" in js and "No tarifado" in js and "No aplica" in js
+ assert "tolerancia:'Tolerancia'" in js and "requiere_aprobacion_humana:'Requiere aprobación humana'" in js and "value===true?'Sí'" in js
+ assert "mape_repricing_pct" in js and "No calculable aún" in js
+ assert "kpi__info" in js and "aria-expanded" in js and "type=\"button\"" in js
 
 def test_interactive_curve_uses_all_published_pillars_and_human_utc_dates():
  source=build();js=(source/"app.js").read_text(encoding="utf-8");html=(source/"index.html").read_text(encoding="utf-8");css=(source/"curve.css").read_text(encoding="utf-8")

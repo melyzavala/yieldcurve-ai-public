@@ -19,13 +19,14 @@ FORBIDDEN = (
 PUBLIC_FIELDS = {
     "public_schema_version", "case_id", "version_caso", "version_curva", "fecha_corte",
     "execution_mode", "publication_status", "publication_authorized", "published_at",
-    "agentes", "fuente", "curva", "auditoria", "costos",
+    "agentes", "fuente", "curva", "auditoria", "costos", "indicadores",
 }
 CASE_ID = re.compile(r"^YC-[A-Z0-9]{8,32}$")
 
 _COST_FIELDS = (
     "currency", "pricing_status", "known_cost_usd", "cost_completeness",
-    "total_variable_cost_usd", "fixed_platform_costs_included",
+    "total_variable_cost_usd", "fixed_platform_costs_included", "total_llm_calls",
+    "total_input_tokens", "total_output_tokens", "total_tokens",
 )
 _COST_COMPONENT_FIELDS = (
     "component", "type", "provider", "model", "api_calls", "request_count",
@@ -138,6 +139,7 @@ def _public_document(case_artifact: dict[str, Any], execution_mode: str, publish
         "curva": _sanitized_curve(curve),
         "auditoria": {field: deepcopy(audit[field]) for field in _AUDIT_FIELDS if field in audit},
         "costos": _sanitized_costs(case_artifact.get("cost_trace")),
+        "indicadores": {key: deepcopy(value) for key, value in (case_artifact.get("indicadores") or {}).items() if key in {"mape_repricing_pct", "technical_valid_curves_pct", "technical_processing_minutes"}},
     }
     if _contains_nonfinite(public):
         _fail("PUBLIC_CASE_NON_FINITE")
@@ -193,7 +195,9 @@ def build_approved_live_public_case_artifact(
 
 
 def validate_public_case(public: dict[str, Any]) -> None:
-    if not isinstance(public, dict) or set(public) != PUBLIC_FIELDS:
+    # indicadores is optional for historical artifacts published before KPI projection.
+    required_fields = PUBLIC_FIELDS - {"indicadores"}
+    if not isinstance(public, dict) or not required_fields <= set(public) or set(public) - PUBLIC_FIELDS:
         _fail("PUBLIC_CASE_SCHEMA")
     mode = public.get("execution_mode")
     audit = public.get("auditoria")

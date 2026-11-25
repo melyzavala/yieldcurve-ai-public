@@ -14,6 +14,22 @@ from typing import Any
 from backend.cost_estimator import CostEstimationError, estimate_cost_usd, model_rates
 
 
+def _mape_from_repricing(curve: Any) -> float | None:
+    """Deterministic MAPE on repricing evidence; never substitutes absent inputs."""
+    if not isinstance(curve, dict) or not isinstance(curve.get("repricing"), list):
+        return None
+    errors: list[float] = []
+    for item in curve["repricing"]:
+        if not isinstance(item, dict):
+            continue
+        observed = item.get("dirty_price_input", item.get("observed_price"))
+        theoretical = item.get("dirty_price_theoretical", item.get("recalculated_price"))
+        if not all(isinstance(value, (int, float)) and not isinstance(value, bool) for value in (observed, theoretical)) or observed == 0:
+            continue
+        errors.append(abs((theoretical - observed) / observed) * 100)
+    return sum(errors) / len(errors) if errors else None
+
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -144,6 +160,11 @@ def build_case_artifact(public: dict[str, Any], cost_trace: dict[str, Any], invo
         "fuente_datos": {"source_mode": public.get("fuente_datos", {}).get("source_mode")},
         "curva": deepcopy(curve) if isinstance(curve, dict) else None,
         "auditoria": deepcopy(public.get("auditoria")), "cost_trace": deepcopy(cost_trace),
+        "indicadores": {
+            "mape_repricing_pct": _mape_from_repricing(curve),
+            "technical_valid_curves_pct": None,
+            "technical_processing_minutes": None,
+        },
         "trazabilidad": {"invocation_id": invocation_id},
         "decision_humana": {"approval_status": None, "decision_at": None},
     }

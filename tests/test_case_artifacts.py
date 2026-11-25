@@ -76,3 +76,10 @@ def test_demo_has_no_simulated_llm_usage() -> None:
     assert elara["input_tokens"] is None
     assert elara["cost_status"] == "NOT_OBSERVED_DEMO"
     assert trace["cost_completeness"] == "UNAVAILABLE"
+
+
+def test_case_artifact_calculates_mape_only_from_complete_repricing_evidence() -> None:
+    public = {"caso_id": "YC-MAPE01", "version_caso": 1, "version_curva": "CURVA-MAPE01", "fecha_corte": "2026-11-11", "execution_mode": "DEMO", "estado": "PENDIENTE_APROBACION", "requiere_aprobacion_humana": True, "agentes": {}, "fuente_datos": {"source_mode": "FIXTURE"}, "auditoria": {"tecnicamente_valida": True}, "resultado_curva": {"pillars": [{"instrument_id": "C28", "spot_rate": .1}], "repricing": [{"dirty_price_input": 100.0, "dirty_price_theoretical": 101.0}]}}
+    artifact = build_case_artifact(public, build_cost_trace({"execution_mode": "DEMO"}), "inv")
+    assert artifact["indicadores"]["mape_repricing_pct"] == 1.0
+    assert artifact["indicadores"]["technical_valid_curves_pct"] is None

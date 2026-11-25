@@ -30,7 +30,8 @@
       }
     },
     "auditoria": {"type": ["object", "null"]},
-    "costos": {"type": "object"}
+    "costos": {"type": "object"},
+    "indicadores": {"type": "object", "additionalProperties": false, "properties": {"mape_repricing_pct": {"type": ["number", "null"]}, "technical_valid_curves_pct": {"type": ["number", "null"]}, "technical_processing_minutes": {"type": ["number", "null"]}}}
   },
   "allOf": [
     {
