@@ -70,6 +70,10 @@ _PUBLIC_PILLAR_FIELDS = (
     "observed_price", "recalculated_price", "dirty_price_theoretical",
     "iterations", "converged",
 )
+_PUBLIC_CURVE_POINT_FIELDS = (
+    "instrument_id", "days", "time_years", "spot_rate", "discount_factor", "point_type",
+    "left_pillar", "right_pillar", "source_method",
+)
 
 
 def _public_curve(result: dict[str, Any]) -> dict[str, Any] | None:
@@ -82,12 +86,19 @@ def _public_curve(result: dict[str, Any]) -> dict[str, Any] | None:
         {field: item[field] for field in _PUBLIC_PILLAR_FIELDS if field in item}
         for item in curve["pillars"] if isinstance(item, dict)
     ]
+    curve_points = curve.get("curve_points")
+    if curve_points is not None and not isinstance(curve_points, list):
+        return None
     return {
         "instrument_count": curve.get("instrument_count"),
         "max_absolute_repricing_error": curve.get("max_absolute_repricing_error"),
         "interpolation_method": curve.get("interpolation_method"),
         "metodologia": curve.get("metodologia"),
         "pillars": pillars,
+        "curve_points": [
+            {field: item[field] for field in _PUBLIC_CURVE_POINT_FIELDS if field in item}
+            for item in curve_points or [] if isinstance(item, dict)
+        ],
     }
 
 

@@ -25,7 +25,8 @@
         "metodologia": {"type": ["string", "null"]},
         "instrument_count": {"type": ["integer", "null"], "minimum": 0},
         "max_absolute_repricing_error": {"type": ["number", "null"]},
-        "pillars": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["spot_rate"], "properties": {"spot_rate": {"type": "number"}}}}
+        "pillars": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["spot_rate"], "properties": {"spot_rate": {"type": "number"}}}},
+        "curve_points": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["days", "time_years", "spot_rate", "point_type"], "properties": {"instrument_id": {"type": "string"}, "days": {"type": "integer", "minimum": 1}, "time_years": {"type": "number", "exclusiveMinimum": 0}, "spot_rate": {"type": "number"}, "discount_factor": {"type": "number", "exclusiveMinimum": 0}, "point_type": {"enum": ["PILLAR", "INTERPOLATED"]}, "left_pillar": {"type": "string"}, "right_pillar": {"type": "string"}, "source_method": {"const": "LINEAR_SPOT_RATE"}}}}
       }
     },
     "auditoria": {"type": ["object", "null"]},

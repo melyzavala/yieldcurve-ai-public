@@ -38,6 +38,40 @@ def _finite(value: Any) -> bool:
     return not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(value)
 
 
+def _expanded_curve_points_valid(result: dict[str, Any]) -> bool:
+    """Validate trace-only points without changing the independent repricing path."""
+    points = result.get("curve_points")
+    pillars = result.get("pillars")
+    if points is None:
+        return True
+    if not isinstance(points, list) or not isinstance(pillars, list):
+        return False
+    pillar_by_day = {item.get("days"): item for item in pillars if isinstance(item, dict)}
+    if len(pillar_by_day) != len(pillars):
+        return False
+    previous = 0
+    seen = set()
+    for point in points:
+        if not isinstance(point, dict):
+            return False
+        days, rate, kind = point.get("days"), point.get("spot_rate"), point.get("point_type")
+        if not isinstance(days, int) or days <= previous or days in seen or not _finite(rate) or kind not in {"PILLAR", "INTERPOLATED"}:
+            return False
+        previous, seen = days, seen | {days}
+        if kind == "PILLAR":
+            pillar = pillar_by_day.get(days)
+            if not pillar or point.get("instrument_id") != pillar.get("instrument_id") or point.get("spot_rate") != pillar.get("spot_rate"):
+                return False
+        else:
+            left = point.get("left_pillar")
+            right = point.get("right_pillar")
+            bounds = [{"instrument_id": "OVERNIGHT", "days": 1}, *sorted((item for item in pillars if isinstance(item, dict)), key=lambda item: item.get("days", 0))]
+            pairs = [(a, b) for a, b in zip(bounds, bounds[1:]) if a.get("instrument_id") == left and b.get("instrument_id") == right and a.get("days", 0) < days < b.get("days", 0)]
+            if len(pairs) != 1 or point.get("source_method") != "LINEAR_SPOT_RATE":
+                return False
+    return set(pillar_by_day).issubset(seen)
+
+
 def _nash_matches_independent(methodology: str, independent: list[dict[str, Any]], nash_repricing: list[dict[str, Any]]) -> bool:
     if not isinstance(nash_repricing, list):
         return False
@@ -88,6 +122,7 @@ def execute_atenea(case: dict[str, Any], nash: dict[str, Any], payload: dict[str
         or not nash.get("evidencia_skill", {}).get("skill_sha256")
         or not isinstance(result, dict)
         or not isinstance(result.get("repricing"), list)
+        or not _expanded_curve_points_valid(result)
         or first_nonfinite(payload) is not None
         or first_nonfinite(result) is not None
     )

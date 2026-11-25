@@ -53,6 +53,51 @@ def cashflows(maturity_days: int, coupon_rate: float, face: float=100.0) -> list
 def price(flows: list[tuple[int,float]], nodes: list[ExcelNode]) -> float:
     return sum(amount*discount(linear_rate(nodes,days),days) for days,amount in flows)
 
+def _point_type(nodes: list[ExcelNode], days: int) -> str:
+    return "PILLAR" if any(node.days == days for node in nodes[1:]) else "INTERPOLATED"
+
+def _interpolation_bounds(nodes: list[ExcelNode], days: int) -> tuple[ExcelNode, ExcelNode] | None:
+    ordered = sorted(nodes, key=lambda node: node.days)
+    for left, right in zip(ordered, ordered[1:]):
+        if left.days < days < right.days:
+            return left, right
+    return None
+
+def _flow_trace(instrument_id: str, flows: list[tuple[int, float]], nodes: list[ExcelNode]) -> list[dict]:
+    """Records the existing 182/360 discount inputs without changing valuation."""
+    traced = []
+    for days, amount in flows:
+        rate = linear_rate(nodes, days)
+        point_type = _point_type(nodes, days)
+        entry = {
+            "days": days, "time_years": days / 360.0, "amount": amount,
+            "spot_rate": rate, "discount_factor": discount(rate, days),
+            "point_type": point_type, "source_method": "LINEAR_SPOT_RATE",
+        }
+        if point_type == "INTERPOLATED":
+            left, right = _interpolation_bounds(nodes, days) or (None, None)
+            if left is None or right is None:
+                raise ExcelBootstrapError("LINEAR_INTERPOLATION_OUT_OF_RANGE")
+            entry["left_pillar"] = left.instrument_id
+            entry["right_pillar"] = right.instrument_id
+        traced.append(entry)
+    return traced
+
+def _expanded_curve_points(nodes: list[ExcelNode], bonds: list[tuple[str, int, float, float]]) -> list[dict]:
+    points = {
+        node.days: {
+            "instrument_id": node.instrument_id, "days": node.days,
+            "time_years": node.days / 360.0, "spot_rate": node.spot_rate,
+            "discount_factor": discount(node.spot_rate, node.days), "point_type": "PILLAR",
+        }
+        for node in nodes[1:]
+    }
+    for instrument_id, days, _dirty, coupon_rate in bonds:
+        for flow in _flow_trace(instrument_id, cashflows(days, coupon_rate), nodes):
+            if flow["point_type"] == "INTERPOLATED":
+                points.setdefault(flow["days"], {key: value for key, value in flow.items() if key != "amount"})
+    return [points[days] for days in sorted(points)]
+
 def bootstrap(cetes: list[tuple[str,int,float]], bonds: list[tuple[str,int,float,float]], overnight_rate: float=.0675, tolerance: float=1e-8, max_iterations: int=200) -> list[ExcelNode]:
     if not math.isfinite(overnight_rate): raise ExcelBootstrapError("OVERNIGHT_RATE_INVALID")
     nodes=[ExcelNode("OVERNIGHT",1,overnight_rate,0,0,0,True)]
@@ -76,4 +121,8 @@ def build_from_payload(payload: dict) -> dict:
     cetes=payload.get('excel_cetes_nodes'); bonds=payload.get('excel_mbonos')
     if not isinstance(cetes,list) or not isinstance(bonds,list): raise ExcelBootstrapError('EXCEL_METADATA_MISSING')
     nodes=bootstrap([tuple(x) for x in cetes],[tuple(x) for x in bonds],payload.get('overnight_rate',.0675),payload.get('tolerance',1e-8),payload.get('max_iterations',200))
-    return {'case_id':payload['case_id'],'curve_version':payload['curve_version'],'mode':'SIMULADO','valuation_date':payload['valuation_date'],'metodologia':METHODOLOGY,'pillars':[n.__dict__ for n in nodes[1:]],'repricing':[n.__dict__ for n in nodes if n.instrument_id.startswith('M')],'summary':{'instrument_count':len(nodes)-1,'max_absolute_repricing_error':max(abs(n.recalculated_price-n.observed_price) for n in nodes if n.instrument_id.startswith('M'))}}
+    repricing = []
+    for node, bond in zip((node for node in nodes if node.instrument_id.startswith("M")), bonds, strict=True):
+        instrument_id, days, _dirty, coupon_rate = bond
+        repricing.append({**node.__dict__, "cashflows": _flow_trace(instrument_id, cashflows(days, coupon_rate), nodes)})
+    return {'case_id':payload['case_id'],'curve_version':payload['curve_version'],'mode':'SIMULADO','valuation_date':payload['valuation_date'],'metodologia':METHODOLOGY,'pillars':[n.__dict__ for n in nodes[1:]],'curve_points':_expanded_curve_points(nodes, bonds),'repricing':repricing,'summary':{'instrument_count':len(nodes)-1,'max_absolute_repricing_error':max(abs(n.recalculated_price-n.observed_price) for n in nodes if n.instrument_id.startswith('M'))}}

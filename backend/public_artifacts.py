@@ -34,11 +34,15 @@ _COST_COMPONENT_FIELDS = (
     "pricing_effective_date",
 )
 _AGENT_FIELDS = ("estado", "decision", "dictamen", "datos_faltantes")
-_CURVE_FIELDS = ("metodologia", "instrument_count", "max_absolute_repricing_error", "pillars")
+_CURVE_FIELDS = ("metodologia", "instrument_count", "max_absolute_repricing_error", "pillars", "curve_points")
 _PILLAR_FIELDS = (
     "instrument_id", "days", "time_years", "spot_rate", "discount_factor",
     "observed_price", "recalculated_price", "dirty_price_theoretical", "iterations",
     "converged",
+)
+_CURVE_POINT_FIELDS = (
+    "instrument_id", "days", "time_years", "spot_rate", "discount_factor", "point_type",
+    "left_pillar", "right_pillar", "source_method",
 )
 _AUDIT_FIELDS = ("tecnicamente_valida", "tolerancia", "requiere_aprobacion_humana")
 
@@ -83,8 +87,15 @@ def _sanitized_curve(curve: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(pillar, dict):
             _fail("PUBLIC_CASE_PILLARS_INVALID")
         clean_pillars.append({field: deepcopy(pillar[field]) for field in _PILLAR_FIELDS if field in pillar})
+    points = curve.get("curve_points")
+    if points is not None and (not isinstance(points, list) or not all(isinstance(point, dict) for point in points)):
+        _fail("PUBLIC_CASE_CURVE_POINTS_INVALID")
+    clean_points = [
+        {field: deepcopy(point[field]) for field in _CURVE_POINT_FIELDS if field in point}
+        for point in points or []
+    ]
     return {
-        field: (clean_pillars if field == "pillars" else deepcopy(curve.get(field)))
+        field: (clean_pillars if field == "pillars" else clean_points if field == "curve_points" else deepcopy(curve.get(field)))
         for field in _CURVE_FIELDS
     }
 
@@ -200,6 +211,23 @@ def validate_public_case(public: dict[str, Any]) -> None:
         _fail("PUBLIC_CASE_INVALID")
     if mode == "LIVE" and (not isinstance(source, dict) or source.get("source_mode") != "BANXICO_SIE_LIVE"):
         _fail("PUBLIC_CASE_LIVE_SOURCE_INVALID")
+    points = curve.get("curve_points")
+    if points is not None:
+        if not isinstance(points, list):
+            _fail("PUBLIC_CASE_CURVE_POINTS_INVALID")
+        pillar_days = {item.get("days") for item in curve["pillars"] if isinstance(item, dict)}
+        prior, seen = 0, set()
+        for point in points:
+            if not isinstance(point, dict) or point.get("point_type") not in {"PILLAR", "INTERPOLATED"}:
+                _fail("PUBLIC_CASE_CURVE_POINTS_INVALID")
+            days = point.get("days")
+            if not isinstance(days, int) or days <= prior or days in seen:
+                _fail("PUBLIC_CASE_CURVE_POINTS_INVALID")
+            prior, seen = days, seen | {days}
+            if point["point_type"] == "PILLAR" and days not in pillar_days:
+                _fail("PUBLIC_CASE_CURVE_POINTS_INVALID")
+            if point["point_type"] == "INTERPOLATED" and days in pillar_days:
+                _fail("PUBLIC_CASE_CURVE_POINTS_INVALID")
     if _contains_nonfinite(public):
         _fail("PUBLIC_CASE_NON_FINITE")
     if any(field in json.dumps(public, ensure_ascii=False).lower() for field in FORBIDDEN):
