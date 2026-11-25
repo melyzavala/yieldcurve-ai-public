@@ -36,12 +36,15 @@ def test_public_build_uses_existing_authorized_artifacts_only_and_public_excel_i
  workflow=(ROOT/".github/workflows/pages.yml").read_text(encoding="utf-8")
  assert "web/generate_demo.py" not in workflow and "python web/build.py" in workflow and "{path: web/dist}" in workflow
  dist=build();assert (dist/"index.html").exists() and (dist/"data/cases.json").exists()
- cases=json.loads((dist/"data/cases.json").read_text(encoding="utf-8"));assert len(cases)==1
- case=cases[0];validate_public_case(case)
- assert case["case_id"]=="YC-NV01R0XFRU01" and case["execution_mode"]=="DEMO" and case["publication_status"]=="PUBLISHED" and case["publication_authorized"] is True
+ cases=json.loads((dist/"data/cases.json").read_text(encoding="utf-8"));assert cases
+ by_id={case["case_id"]:case for case in cases};case=by_id["YC-NV01R0XFRU01"]
+ assert case["execution_mode"]=="DEMO" and case["publication_status"]=="PUBLISHED" and case["publication_authorized"] is True
  assert case["auditoria"]["tecnicamente_valida"] is True and case["curva"]["instrument_count"]==10 and len(case["curva"]["pillars"])==10
- assert not any(field in json.dumps(case).lower() for field in FORBIDDEN)
- assert (dist/"downloads"/"YieldCurve_YC-NV01R0XFRU01.xlsx").exists()
+ for case in cases:
+  validate_public_case(case);assert not any(field in json.dumps(case).lower() for field in FORBIDDEN)
+  assert (dist/"downloads"/f"YieldCurve_{case['case_id']}.xlsx").exists()
+ live=by_id.get("YC-TG177652682")
+ assert live is None or (live["execution_mode"]=="LIVE" and live["publication_status"]=="PUBLISHED")
  book=build_case_workbook(adapt(build_public_case_artifact(approved_demo(),"2026-01-01T00:00:00Z")),include_private_decision=False)
  with zipfile.ZipFile(BytesIO(book)) as z: text=" ".join(z.read(n).decode("utf-8","ignore").lower() for n in z.namelist() if n.endswith(".xml"));assert not any(x in text for x in FORBIDDEN)
 

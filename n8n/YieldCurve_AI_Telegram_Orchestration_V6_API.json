@@ -24,7 +24,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Normalize safe Telegram event').first().json.telegram_chat_id }}",
+        "chatId": "={{ $json.telegram_chat_id }}",
         "text": "={{ $json.reply }}",
         "additionalFields": {"appendAttribution": false}
       },
@@ -37,7 +37,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const decision=$('Guard status callback and expiry').first().json; return decision.new_state==='APROBADA_HUMANAMENTE' ? [{json:decision}] : [];"
+        "jsCode": "const row=$input.first().json; const approved=row.estado==='APROBADA_HUMANAMENTE'||row.approval_status==='APPROVED'; return approved?[{json:row}]:[];"
       },
       "id": "4c3e7bbd-7147-4d41-8d10-a60000100009",
       "name": "Route approved decision to publication",
@@ -58,11 +58,11 @@
     {
       "parameters": {
         "operation": "get",
-        "dataTableId": {"__rl": true, "value": "__YC_CASES_TABLE_ID__", "mode": "list"},
+        "dataTableId": {"__rl": true, "value": "__YC_CASES_TABLE_ID__", "mode": "list", "cachedResultName": "YC_CASES", "cachedResultUrl": "/projects/__YC_PROJECT__/datatables/__YC_CASES_TABLE_ID__"},
         "matchType": "allConditions",
         "filters": {"conditions": [
-          {"keyName": "caso_id", "keyValue": "={{ $('Guard status callback and expiry').first().json.case_row.caso_id }}"},
-          {"keyName": "version_caso", "keyValue": "={{ $('Guard status callback and expiry').first().json.case_row.version_caso }}"}
+          {"keyName": "caso_id", "keyValue": "={{ $json.caso_id }}"},
+          {"keyName": "version_caso", "keyValue": "={{ Number($json.version_caso) }}"}
         ]}
       },
       "id": "4c3e7bbd-7147-4d41-8d10-a60000100010",
@@ -73,7 +73,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const persisted=$input.first().json; const original=$('Guard status callback and expiry').first().json.case_row; if (persisted.caso_id!==original.caso_id || String(persisted.version_caso)!==String(original.version_caso) || persisted.estado!=='APROBADA_HUMANAMENTE' || persisted.approval_status!=='APPROVED') throw new Error('PUBLICATION_APPROVAL_NOT_PERSISTED'); return [{json:{...persisted,approval_evidence:{caso_id:persisted.caso_id,version_caso:persisted.version_caso,estado:persisted.estado,approval_status:persisted.approval_status}}}];"
+        "jsCode": "const persisted=$input.first()?.json; if (!persisted||!persisted.caso_id||persisted.version_caso===undefined||persisted.version_caso===null||persisted.estado!=='APROBADA_HUMANAMENTE'||persisted.approval_status!=='APPROVED') throw new Error('PUBLICATION_APPROVAL_NOT_PERSISTED'); return [{json:{...persisted,approval_evidence:{caso_id:persisted.caso_id,version_caso:persisted.version_caso,estado:persisted.estado,approval_status:persisted.approval_status}}}];"
       },
       "id": "4c3e7bbd-7147-4d41-8d10-a60000100011",
       "name": "Validate persisted approval for publication",
@@ -111,7 +111,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const publicCase=$input.first().json; const row=$('Validate persisted approval for publication').first().json; if (publicCase.case_id!==row.caso_id || String(publicCase.version_caso)!==String(row.version_caso) || publicCase.execution_mode!=='LIVE' || publicCase.publication_authorized!==true || publicCase.fuente?.source_mode!=='BANXICO_SIE_LIVE') throw new Error('PUBLICATION_PUBLIC_ARTIFACT_INVALID'); return [{json:{public_case:publicCase,case_id:row.caso_id,version_caso:row.version_caso}}];"
+        "jsCode": "const publicCase=$input.first().json; const row=$('Validate persisted approval for publication').first().json; if (publicCase.case_id!==row.caso_id || String(publicCase.version_caso)!==String(row.version_caso) || publicCase.execution_mode!=='LIVE' || publicCase.publication_authorized!==true || publicCase.fuente?.source_mode!=='BANXICO_SIE_LIVE') throw new Error('PUBLICATION_PUBLIC_ARTIFACT_INVALID'); return [{json:{public_case:publicCase,case_id:row.caso_id,version_caso:row.version_caso,telegram_chat_id:row.telegram_chat_id}}];"
       },
       "id": "4c3e7bbd-7147-4d41-8d10-a60000100014",
       "name": "Validate public artifact identity",
@@ -153,7 +153,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({message:'publish: approved live case '+$json.case_id+' v'+$json.version_caso,branch:'main',content:Buffer.from(JSON.stringify($json.public_case,null,2)+'\\n').toString('base64')}) }}",
+        "jsonBody": "={{ $json.github_body }}",
         "options": {"retry": {"maxTries": 1}}
       },
       "id": "4c3e7bbd-7147-4d41-8d10-a60000100017",
@@ -163,6 +163,16 @@
       "position": [11328, 2320],
       "continueOnFail": true,
       "credentials": {"httpHeaderAuth": {"id": "__YC_GITHUB_AUTH__", "name": "__YC_GITHUB_AUTH__"}}
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx=$input.first().json; const content=JSON.stringify(ctx.public_case,null,2)+'\\n'; return [{json:{...ctx,github_body:{message:`publish: approved live case ${ctx.case_id} v${ctx.version_caso}`,branch:'main',content:Buffer.from(content,'utf8').toString('base64')}}}];"
+      },
+      "id": "4c3e7bbd-7147-4d41-8d10-a60000100021",
+      "name": "Prepare GitHub publication payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [11328, 2320]
     },
     {
       "parameters": {
@@ -3187,7 +3197,8 @@
     "Validate public artifact identity": {"main": [[{"node": "GitHub | Get public case", "type": "main", "index": 0}]]},
     "GitHub | Get public case": {"main": [[{"node": "Decide idempotent GitHub publication", "type": "main", "index": 0}]]},
     "Decide idempotent GitHub publication": {"main": [[{"node": "Route GitHub publication action", "type": "main", "index": 0}]]},
-    "Route GitHub publication action": {"main": [[{"node": "GitHub | Create approved LIVE case", "type": "main", "index": 0}], [{"node": "Prepare publication result message", "type": "main", "index": 0}]]},
+    "Route GitHub publication action": {"main": [[{"node": "Prepare GitHub publication payload", "type": "main", "index": 0}], [{"node": "Prepare publication result message", "type": "main", "index": 0}]]},
+    "Prepare GitHub publication payload": {"main": [[{"node": "GitHub | Create approved LIVE case", "type": "main", "index": 0}]]},
     "GitHub | Create approved LIVE case": {"main": [[{"node": "Prepare publication result message", "type": "main", "index": 0}]]},
     "Prepare publication result message": {"main": [[{"node": "Telegram | Send publication result", "type": "main", "index": 0}]]},
     "Telegram | Send publication result": {"main": [[]]},

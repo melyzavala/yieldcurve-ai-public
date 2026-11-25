@@ -39,9 +39,22 @@ def test_v6_workflow_is_valid_json_and_inactive() -> None:
 
 def test_v6_calls_only_render_once_with_safe_http_configuration() -> None:
     workflow = load_workflow()
-    http_nodes = [node for node in workflow["nodes"] if node["type"] == "n8n-nodes-base.httpRequest"]
-    assert len(http_nodes) == 2
-    params = nodes_by_name(workflow)["Invoke YieldCurve API once"]["parameters"]
+    nodes = nodes_by_name(workflow)
+    expected = {
+        "Invoke YieldCurve API once",
+        "Generate curve PNG",
+        "Build sanitized LIVE public artifact",
+        "GitHub | Get public case",
+        "GitHub | Create approved LIVE case",
+    }
+    http_nodes = {node["name"]: node for node in workflow["nodes"] if node["type"] == "n8n-nodes-base.httpRequest"}
+    assert set(http_nodes) == expected
+    for name in expected:
+        assert http_nodes[name]["parameters"]["authentication"] == "genericCredentialType"
+        credential = http_nodes[name]["credentials"]["httpHeaderAuth"]
+        assert credential["id"].startswith("__YC_")
+        assert credential["name"].startswith("__YC_")
+    params = nodes["Invoke YieldCurve API once"]["parameters"]
     assert params["url"] == "https://yieldcurve-ai.onrender.com/v1/orion/run"
     assert params["method"] == "POST"
     assert params["options"]["timeout"] == 90000
@@ -81,6 +94,7 @@ def test_v6_export_uses_portable_markers_for_instance_metadata() -> None:
         "__YC_CASES_TABLE_ID__",
         "__YC_ACCESS_TABLE_ID__",
         "__YC_ACCESS_CODES_TABLE_ID__",
+        "__YC_GITHUB_AUTH__",
     }
     assert all(marker in serialized for marker in expected_markers)
 
@@ -95,6 +109,7 @@ def test_v6_export_uses_portable_markers_for_instance_metadata() -> None:
         if table:
             assert table["value"].startswith("__YC_")
             assert "__YC_PROJECT__" in table["cachedResultUrl"]
+            assert table["cachedResultName"]
 
     setup = SETUP.read_text(encoding="utf-8")
     assert "marcadores de importación" in setup
@@ -197,7 +212,7 @@ def test_v6_routes_errors_callbacks_and_status_without_backend_reexecution() -> 
     connections = workflow["connections"]
     assert destinations(workflow, "Invoke YieldCurve API once", 1) == {"YC_CASES | Persist API error"}
     assert destinations(workflow, "Gate expired or allowed callback", 1) == {"YC_CASES | Persist allowed decision"}
-    assert destinations(workflow, "YC_CASES | Persist allowed decision") == {"Telegram | Answer callback"}
+    assert destinations(workflow, "YC_CASES | Persist allowed decision") == {"Telegram | Answer callback", "Route approved decision to publication"}
     assert destinations(workflow, "Route non-allowed callback", 0) == {"Telegram | Answer callback"}
     assert destinations(workflow, "Route expired response", 0) == {"Telegram | Answer callback"}
     assert "Invoke YieldCurve API once" not in json.dumps(connections["YC_CASES | Load case"])
