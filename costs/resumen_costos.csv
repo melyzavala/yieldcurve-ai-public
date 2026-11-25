@@ -1,0 +1,5 @@
+case_id,case_kind,final_state,llm_calls,input_tokens,output_tokens,cached_tokens,openai_cost_usd,voice_cost_usd,other_variable_cost_usd,known_variable_cost_usd,pricing_completeness,status,evidence
+YC-TG177652682,LIVE,PUBLISHED,1,2201,185,,0.00031260,,,0.00031260,PARTIAL,ESTIMATED,data/public/cases/YC-TG177652682.json
+YC-PIPE20261111,DEMO,PENDIENTE_APROBACION,0,,,,,,,,UNAVAILABLE,NOT_OBSERVED,tests/test_yieldcurve_pipeline.py
+YC-ARTIFACT01,DEMO,PENDIENTE_APROBACION,0,,,,,,,,UNAVAILABLE,NOT_OBSERVED,tests/test_case_artifacts.py
+YC-SECURITY20260414,REJECTED,BLOQUEADO_SEGURIDAD_O_PRESUPUESTO,0,,,,,,,,NOT_APPLICABLE,NOT_APPLICABLE,tests/test_security_cost_loop.py

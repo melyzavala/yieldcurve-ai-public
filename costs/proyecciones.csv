@@ -1,0 +1,7 @@
+scenario,monthly_cases,live_share,failed_share,llm_calls_per_live,measured_input_tokens_per_live,measured_output_tokens_per_live,known_openai_cost_per_live_usd,known_openai_variable_cost_usd,voice_duration_assumption,voice_cost_usd,fixed_platform_cost_usd,unknown_components,status,notes
+base,100,0.10,0.00,1,2201,185,0.00031260,0.00312600,not_available,,,Banxico;Render;n8n;GitHub;ElevenLabs plan,ESTIMATED,"Solo extrapola la corrida LIVE medida; 90% DEMO no agrega costo LLM. No representa cargo total."
+base,1000,0.10,0.00,1,2201,185,0.00031260,0.03126000,not_available,,,Banxico;Render;n8n;GitHub;ElevenLabs plan,ESTIMATED,"Solo componente OpenAI conocido."
+base,10000,0.10,0.00,1,2201,185,0.00031260,0.31260000,not_available,,,Banxico;Render;n8n;GitHub;ElevenLabs plan,ESTIMATED,"Solo componente OpenAI conocido."
+high_consumption,100,1.00,0.00,1,2201,185,0.00031260,0.03126000,not_available,,,Banxico;Render;n8n;GitHub;ElevenLabs plan,ESTIMATED,"Sensibilidad de 100% LIVE con el mismo perfil medido; no asume voz."
+high_consumption,1000,1.00,0.00,1,2201,185,0.00031260,0.31260000,not_available,,,Banxico;Render;n8n;GitHub;ElevenLabs plan,ESTIMATED,"Sensibilidad de 100% LIVE con el mismo perfil medido; no asume voz."
+high_consumption,10000,1.00,0.00,1,2201,185,0.00031260,3.12600000,not_available,,,Banxico;Render;n8n;GitHub;ElevenLabs plan,ESTIMATED,"Sensibilidad de 100% LIVE con el mismo perfil medido; no asume voz."
