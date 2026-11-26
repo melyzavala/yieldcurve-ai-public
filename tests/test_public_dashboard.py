@@ -77,7 +77,7 @@ def test_cost_and_kpi_presentation_uses_published_semantics_and_human_labels():
  source=build();js=(source/"app.js").read_text(encoding="utf-8");html=(source/"index.html").read_text(encoding="utf-8")
  assert "known_cost_usd" in js and "Pricing parcial" in js and "No tarifado" in js and "No aplica" in js
  assert "tolerancia:'Tolerancia'" in js and "requiere_aprobacion_humana:'Requiere aprobación humana'" in js and "value===true?'Sí'" in js
- assert "mape_repricing_pct" in js and "No calculable aún" in js
+ assert "mape_repricing_pct" in js and "Evidencia insuficiente" in js
  assert "kpi__info" in js and "aria-expanded" in js and "type=\"button\"" in js
 
 def test_interactive_curve_uses_all_published_pillars_and_human_utc_dates():
@@ -86,7 +86,22 @@ def test_interactive_curve_uses_all_published_pillars_and_human_utc_dates():
  assert len(pillars)==10 and all("instrument_id" in pillar for pillar in pillars)
  assert ".sort((a,b)=>a.days-b.days)" in js and ".join(' ')" in js
  assert "const published=c.curva?.curve_points?.length?c.curva.curve_points" in js
- assert "data-pillar" in js and "mouseenter" in js and "keydown" in js and "pillarDetail" in js
+ assert "data-point-index" in js and "data-case-index" in js and "mouseenter" in js and "keydown" in js and "pillarDetail" in js
  assert "formatDate" in js and "timeZone:'UTC'" in js and "${formatDate(c.published_at)}" in js
  assert "aria-live=\"polite\"" in html and "La visualización usa exclusivamente puntos publicados; no interpola ni recalcula las tasas." in html
  assert ".chart-point:focus-visible" in css and not any(token in (html+js+css).lower() for token in FORBIDDEN)
+
+def test_clean_restore_adds_only_published_curve_extensions_and_cache_busting():
+ source=build();html=(source/'index.html').read_text(encoding='utf-8');js=(source/'app.js').read_text(encoding='utf-8');curve=(source/'curve.css').read_text(encoding='utf-8');cases=json.loads((source/'data/cases.json').read_text(encoding='utf-8'))
+ assert 'app.js?v=' in html and 'styles.css?v=' in html and 'curve.css?v=' in html
+ for token in ('decision-supported','decision-supported__lead','decision-supported__flow','Cómo leer este dashboard','Cómo funciona YieldCurve AI','elevenlabs-convai'): assert token in html
+ for token in ('curve_points?.length','pillars||[]','left_pillar','right_pillar','lectura_curva','sort((a,b)=>String(b.published_at)','technical_valid_curves_pct','technical_processing_minutes'): assert token in js
+ assert 'fill="none"' in js and '.chart-line{fill:none;stroke:var(--coral)}' in curve
+ assert cases and all((source/'downloads'/f"YieldCurve_{case['case_id']}.xlsx").exists() for case in cases)
+ assert next(case for case in cases if case['case_id']=='YC-TG177652684')['published_at']=='2026-11-26T07:04:14.893074+00:00'
+
+def test_kpis_have_spacious_accessible_explanations_for_interpretation():
+ source=build();js=(source/'app.js').read_text(encoding='utf-8');css=(source/'styles.css').read_text(encoding='utf-8')
+ assert 'Un valor menor indica mayor consistencia de repricing' in js
+ assert 'aria-expanded' in js and 'kpi__info-text' in js
+ assert 'min-height:148px' in css and 'max-width:calc(100% - 38px)' in css

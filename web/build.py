@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, shutil, sys, zipfile
+import hashlib, json, shutil, sys, zipfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT))
 from backend.case_excel import build_case_workbook
@@ -14,6 +14,11 @@ def build():
   case=json.loads(path.read_text(encoding="utf-8")); validate_public_case(case); cases.append(case); (dist/"downloads"/f"YieldCurve_{case['case_id']}.xlsx").write_bytes(build_case_workbook(adapt(case),include_private_decision=False))
  (dist/"data/cases.json").write_text(json.dumps(cases,ensure_ascii=False,indent=2),encoding="utf-8")
  for name in ("index.html","styles.css","vizdata.css","curve.css","app.js"): shutil.copy2(ROOT/"web/src"/name,dist/name)
+ html=(dist/"index.html").read_text(encoding="utf-8")
+ for name in ("styles.css","curve.css","app.js"):
+  version=hashlib.sha256((dist/name).read_bytes()).hexdigest()[:12]
+  html=html.replace(f'"{name}"',f'"{name}?v={version}"')
+ (dist/"index.html").write_text(html,encoding="utf-8")
  shutil.copytree(ROOT/"web/src/fonts",dist/"fonts",dirs_exist_ok=True)
  shutil.copy2(ROOT/"web/public_case.schema.json",dist/"data/public_case.schema.json")
  text=" ".join(p.read_text(encoding="utf-8",errors="ignore").lower() for p in dist.rglob("*") if p.is_file() and p.suffix!=".xlsx")
