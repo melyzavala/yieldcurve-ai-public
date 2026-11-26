@@ -76,7 +76,7 @@ def test_vizdata_history_filters_and_three_kpis_are_static_public_presentation()
 def test_cost_and_kpi_presentation_uses_published_semantics_and_human_labels():
  source=build();js=(source/"app.js").read_text(encoding="utf-8");html=(source/"index.html").read_text(encoding="utf-8")
  assert "known_cost_usd" in js and "Pricing parcial" in js and "No tarifado" in js and "No aplica" in js
- assert "tolerancia:'Tolerancia'" in js and "requiere_aprobacion_humana:'Requiere aprobación humana'" in js and "value===true?'Sí'" in js
+ assert "tolerancia:'Tolerancia'" in js and "requiere_aprobacion_humana:'Aprobación humana requerida'" in js and "value===true?'Sí'" in js
  assert "mape_repricing_pct" in js and "Evidencia insuficiente" in js
  assert "kpi__info" in js and "aria-expanded" in js and "type=\"button\"" in js
 
@@ -103,5 +103,16 @@ def test_clean_restore_adds_only_published_curve_extensions_and_cache_busting():
 def test_kpis_have_spacious_accessible_explanations_for_interpretation():
  source=build();js=(source/'app.js').read_text(encoding='utf-8');css=(source/'styles.css').read_text(encoding='utf-8')
  assert 'Un valor menor indica mayor consistencia de repricing' in js
- assert 'aria-expanded' in js and 'kpi__info-text' in js
+ assert 'aria-expanded' in js and 'aria-controls' in js and 'kpi__popover' in js
+ assert 'closeKpiPopovers' in js and "event.key==='Escape'" in js
+ assert 'position:absolute' in css and '.kpi{overflow:visible}' in css
  assert 'min-height:148px' in css and 'max-width:calc(100% - 38px)' in css
+
+def test_final_polish_keeps_nova_contextual_and_preserves_published_curve_logic():
+ source=build();html=(source/'index.html').read_text(encoding='utf-8');js=(source/'app.js').read_text(encoding='utf-8');css=(source/'styles.css').read_text(encoding='utf-8')
+ assert "['elara','siena','nash','atenea','orion']" in js and "'nova'" not in js[js.index("get('agents').innerHTML"):js.index("const facts=")]
+ assert 'Nova · asistente de voz' in html and 'Consulta la evidencia pública de este caso mediante voz.' in html and 'elevenlabs-convai' in html
+ assert '.dashboard-grid--primary,.dashboard-grid--secondary{align-items:stretch}' in css and '.panel--agents,.panel--audit{display:flex;flex-direction:column}' in css and '.nova-context{margin-top:auto' in css
+ assert 'useCriterion' in html and 'Datos de mercado validados' in js and 'curve.max_absolute_repricing_error<=audit.tolerancia' in js
+ assert 'Bootstrap 182 días · V1' in js and 'Banxico SIE · Datos en vivo' in js and 'Snapshot DEMO 11/11/2026' in js
+ assert "const published=c.curva?.curve_points?.length?c.curva.curve_points" in js and 'fill="none"' in js

@@ -1,9 +1,9 @@
-name: Validate clean dashboard restore
+name: Validate final dashboard polish
 
 on:
   push:
     branches:
-      - dashboard-clean-restore
+      - dashboard-final-polish
 
 permissions:
   contents: read
@@ -40,6 +40,6 @@ jobs:
       - name: Upload dashboard preview
         uses: actions/upload-artifact@v4
         with:
-          name: dashboard-clean-preview
+          name: dashboard-final-polish-preview
           path: web/dist
           if-no-files-found: error
