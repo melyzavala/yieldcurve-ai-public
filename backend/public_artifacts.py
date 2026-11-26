@@ -45,7 +45,7 @@ _CURVE_POINT_FIELDS = (
     "instrument_id", "days", "time_years", "spot_rate", "discount_factor", "point_type",
     "left_pillar", "right_pillar", "source_method",
 )
-_AUDIT_FIELDS = ("tecnicamente_valida", "tolerancia", "requiere_aprobacion_humana")
+_AUDIT_FIELDS = ("tecnicamente_valida", "tolerancia", "requiere_aprobacion_humana", "lectura_curva")
 
 
 def _fail(code: str) -> None:
