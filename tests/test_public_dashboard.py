@@ -8,7 +8,7 @@ def test_dashboard_uses_published_data_with_historical_fallback_and_accessibilit
  d=build(); html=(d/'index.html').read_text(encoding='utf-8'); js=(d/'app.js').read_text(encoding='utf-8'); css=(d/'styles.css').read_text(encoding='utf-8')
  for token in ('hero','context','kpis','chart','agents','audit','costs','historyRows','Indicadores de desempeño','Cómo leer este dashboard','elevenlabs-convai','download'): assert token in html
  for token in ('published_at','localeCompare','data-point-index','data-case-index','chart-line','curve_points?.length','pillars||[]','indicadores||{}','known_cost_usd','lectura_curva','modeFilter','dateFrom','dateTo','No fue posible cargar','downloads/YieldCurve_'): assert token in js
- assert 'prefers-reduced-motion:reduce' in css and '.hero-art' in css and '@media(max-width:540px)' in css
+ assert 'prefers-reduced-motion:reduce' in css and '.hero-art' in css and '@media(max-width:540px)' in css and 'fill:none;stroke:var(--accent)' in css
 
 def test_built_dashboard_uses_cache_busted_assets_and_only_published_curve_evidence():
  d=build(); html=(d/'index.html').read_text(encoding='utf-8'); cases=json.loads((d/'data/cases.json').read_text(encoding='utf-8'))
