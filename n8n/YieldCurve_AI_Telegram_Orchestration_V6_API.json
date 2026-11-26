@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const item=$input.first().json; const ctx=item.public_case ? item : $('Decide idempotent GitHub publication').first().json; const failed=Boolean(item.error)||ctx.publication_action==='ERROR'; const id=ctx.case_id; return [{json:{...ctx,reply:failed?`Caso ${id} aprobado por decisión humana. La publicación no pudo completarse.`:`Caso ${id} aprobado por decisión humana y enviado a publicación.`}}];"
+        "jsCode": "const item=$input.first().json; const ctx=item.public_case ? item : $('Decide idempotent GitHub publication').first().json; const failed=Boolean(item.error)||ctx.publication_action==='ERROR'; const noop=ctx.publication_action==='NOOP'; const id=ctx.case_id; return [{json:{...ctx,reply:failed?`Caso ${id} aprobado por decisión humana, pero la publicación no pudo completarse.`:noop?`Caso ${id} aprobado por decisión humana. El artefacto ya estaba publicado.`:`Caso ${id} aprobado por decisión humana. Artefacto enviado a publicación.`}}];"
       },
       "id": "4c3e7bbd-7147-4d41-8d10-a60000100019",
       "name": "Prepare publication result message",
@@ -2816,7 +2816,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const g=$('Guard status callback and expiry').first().json;const folio=g.case_row?.caso_id||String(g.args?.[1]||'');let reply='Decisión no autorizada o caso no vigente.';if(g.expired)reply=`El periodo de aprobación del caso ${folio} expiró.`;else if(g.allowed)reply=g.args?.[0]==='APR'?`Caso ${folio} aprobado por decisión humana.`:`Caso ${folio} rechazado por decisión humana.`;return[{json:{...g,reply,reply_markup:null}}];"
+        "jsCode": "const g=$('Guard status callback and expiry').first().json;const folio=g.case_row?.caso_id||String(g.args?.[1]||'');if(g.allowed&&g.args?.[0]==='APR')return[];let reply='Decisión no autorizada o caso no vigente.';if(g.expired)reply=`El periodo de aprobación del caso ${folio} expiró.`;else if(g.allowed)reply=`Caso ${folio} rechazado por decisión humana.`;return[{json:{...g,reply,reply_markup:null}}];"
       },
       "name": "Restore callback response context",
       "type": "n8n-nodes-base.code",

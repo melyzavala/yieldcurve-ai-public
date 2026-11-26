@@ -288,6 +288,7 @@ class ElaraExecutor:
                 input=input_messages,
                 max_output_tokens=MAX_OUTPUT_TOKENS,
                 reasoning={"effort": "low"},
+                prompt_cache_options={"ttl": "30m"},
                 text={
                     "format": {
                         "type": "json_schema",
@@ -435,6 +436,11 @@ class ElaraExecutor:
         usage = getattr(response, "usage", None)
         input_details = getattr(usage, "input_tokens_details", None)
         cache_write_details = getattr(input_details, "cache_write_tokens_details", None)
+        cache_write_tokens = getattr(input_details, "cache_write_tokens", getattr(input_details, "cache_creation_tokens", None))
+        ttl_30m_tokens = getattr(cache_write_details, "ttl_30m_tokens", None)
+        ttl_12h_tokens = getattr(cache_write_details, "ttl_12h_tokens", None)
+        if cache_write_tokens is not None and ttl_30m_tokens is None and ttl_12h_tokens is None:
+            ttl_30m_tokens, ttl_12h_tokens = cache_write_tokens, 0
         return InvocationRecord(
             model=self.model,
             response_id=getattr(response, "id", None),
@@ -445,9 +451,9 @@ class ElaraExecutor:
             error_code=error_code,
             error_message=error_message,
             cached_input_tokens=getattr(input_details, "cached_tokens", None),
-            cache_write_tokens=getattr(input_details, "cache_write_tokens", getattr(input_details, "cache_creation_tokens", None)),
-            ttl_30m_tokens=getattr(cache_write_details, "ttl_30m_tokens", None),
-            ttl_12h_tokens=getattr(cache_write_details, "ttl_12h_tokens", None),
+            cache_write_tokens=cache_write_tokens,
+            ttl_30m_tokens=ttl_30m_tokens,
+            ttl_12h_tokens=ttl_12h_tokens,
             validation_diagnostic=validation_diagnostic,
         )
 

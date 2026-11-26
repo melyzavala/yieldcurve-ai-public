@@ -205,6 +205,9 @@ def test_v6_context_restoration_always_uses_normal_response_branch() -> None:
         assert destinations(workflow, name) == {"If"}
     assert "Acceso temporal habilitado." in nodes["Restore access confirmation context"]["parameters"]["jsCode"]
     assert "Decisión no autorizada o caso no vigente." in nodes["Restore callback response context"]["parameters"]["jsCode"]
+    callback = nodes["Restore callback response context"]["parameters"]["jsCode"]
+    assert "g.allowed&&g.args?.[0]==='APR'" in callback and "return[]" in callback
+    assert "rechazado por decisión humana" in callback
 
 
 def test_v6_routes_errors_callbacks_and_status_without_backend_reexecution() -> None:
