@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dashboard-final-polish
+      - dashboard-final-display-fix
 
 permissions:
   contents: read

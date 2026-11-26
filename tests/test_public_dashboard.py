@@ -1,4 +1,4 @@
-import json,zipfile
+import json,subprocess,zipfile
 from io import BytesIO
 import pytest
 from pathlib import Path
@@ -116,3 +116,15 @@ def test_final_polish_keeps_nova_contextual_and_preserves_published_curve_logic(
  assert 'useCriterion' in html and 'Datos de mercado validados' in js and 'curve.max_absolute_repricing_error<=audit.tolerancia' in js
  assert 'Bootstrap 182 días · V1' in js and 'Banxico SIE · Datos en vivo' in js and 'Snapshot DEMO 11/11/2026' in js
  assert "const published=c.curva?.curve_points?.length?c.curva.curve_points" in js and 'fill="none"' in js
+
+def test_audit_reading_is_excluded_from_generic_facts_and_micro_costs_keep_precision():
+ source=build();js=(source/'app.js').read_text(encoding='utf-8')
+ audit={"tecnicamente_valida":True,"tolerancia":1e-8,"requiere_aprobacion_humana":True,"lectura_curva":{"forma":"ASCENDENTE"}}
+ assert audit["lectura_curva"]["forma"]=="ASCENDENTE"
+ assert "Object.entries(audit).filter(([key])=>key!=='lectura_curva')" in js
+ assert "const reading=audit.lectura_curva" in js and "<h3>Lectura de la curva</h3>" in js
+ assert "[object Object]" not in js
+ usd_source=js[js.index('const usd='):js.index('const roles=')]
+ result=subprocess.run(["node","-e",usd_source+"console.log(JSON.stringify([usd(0),usd(0.00036505),usd(0.005),usd(0.01),usd(1.25)]))"],check=True,capture_output=True,text=True)
+ assert json.loads(result.stdout)==["$0.00","$0.000365","$0.005","$0.01","$1.25"]
+ assert "Pricing parcial · existen componentes no tarifados" in js and "No tarifado" in js
