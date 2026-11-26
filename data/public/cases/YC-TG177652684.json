@@ -1,0 +1,218 @@
+{
+  "public_schema_version": "1.0.0",
+  "case_id": "YC-TG177652684",
+  "version_caso": 1,
+  "version_curva": "CURVA-YC-TG177652684-V1-V1",
+  "fecha_corte": "2026-11-24",
+  "execution_mode": "LIVE",
+  "publication_status": "PUBLISHED",
+  "publication_authorized": true,
+  "published_at": "2026-11-26T07:04:14.893074+00:00",
+  "agentes": {
+    "elara": {
+      "estado": "ACEPTAR",
+      "decision": "ACEPTAR",
+      "datos_faltantes": []
+    },
+    "siena": {
+      "estado": "DATOS_VALIDOS"
+    },
+    "nash": {
+      "estado": "CALCULO_COMPLETADO"
+    },
+    "atenea": {
+      "estado": "DICTAMEN_TECNICO_VALIDADO"
+    }
+  },
+  "fuente": {
+    "source_mode": "BANXICO_SIE_LIVE"
+  },
+  "curva": {
+    "metodologia": "EXCEL_BOOTSTRAP_182D_V1",
+    "instrument_count": 10,
+    "max_absolute_repricing_error": 8.586440003455209e-9,
+    "pillars": [
+      {
+        "instrument_id": "C28",
+        "days": 23,
+        "spot_rate": 0.06156362274503865,
+        "observed_price": 9.960228,
+        "recalculated_price": 9.960228,
+        "iterations": 0,
+        "converged": true
+      },
+      {
+        "instrument_id": "C91",
+        "days": 86,
+        "spot_rate": 0.06401455762941254,
+        "observed_price": 9.847033,
+        "recalculated_price": 9.847033,
+        "iterations": 0,
+        "converged": true
+      },
+      {
+        "instrument_id": "C182",
+        "days": 170,
+        "spot_rate": 0.06544157317310295,
+        "observed_price": 9.695533,
+        "recalculated_price": 9.695533,
+        "iterations": 0,
+        "converged": true
+      },
+      {
+        "instrument_id": "C364",
+        "days": 352,
+        "spot_rate": 0.06766819720717916,
+        "observed_price": 9.369691,
+        "recalculated_price": 9.369691,
+        "iterations": 0,
+        "converged": true
+      },
+      {
+        "instrument_id": "C2Y",
+        "days": 674,
+        "spot_rate": 0.07606981490884597,
+        "observed_price": 8.732883,
+        "recalculated_price": 8.732883,
+        "iterations": 0,
+        "converged": true
+      },
+      {
+        "instrument_id": "MBONO_0_3",
+        "days": 1192,
+        "spot_rate": 0.08053004345856607,
+        "observed_price": 103.373256,
+        "recalculated_price": 103.37325599495753,
+        "iterations": 32,
+        "converged": true
+      },
+      {
+        "instrument_id": "MBONO_3_5",
+        "days": 1969,
+        "spot_rate": 0.08723915164591745,
+        "observed_price": 98.188522,
+        "recalculated_price": 98.18852200652665,
+        "iterations": 34,
+        "converged": true
+      },
+      {
+        "instrument_id": "MBONO_7_10",
+        "days": 3376,
+        "spot_rate": 0.09541911550331861,
+        "observed_price": 94.074603,
+        "recalculated_price": 94.074603008476,
+        "iterations": 33,
+        "converged": true
+      },
+      {
+        "instrument_id": "MBONO_10_20",
+        "days": 5833,
+        "spot_rate": 0.10380513564450666,
+        "observed_price": 87.222269,
+        "recalculated_price": 87.2222689962101,
+        "iterations": 34,
+        "converged": true
+      },
+      {
+        "instrument_id": "MBONO_20_30",
+        "days": 10383,
+        "spot_rate": 0.10663570126052946,
+        "observed_price": 85.512869,
+        "recalculated_price": 85.51286899141355,
+        "iterations": 33,
+        "converged": true
+      }
+    ]
+  },
+  "auditoria": {
+    "tecnicamente_valida": true,
+    "tolerancia": 1e-8,
+    "requiere_aprobacion_humana": true
+  },
+  "costos": {
+    "currency": "USD",
+    "pricing_status": "NOT_AVAILABLE",
+    "known_cost_usd": null,
+    "cost_completeness": "UNAVAILABLE",
+    "total_variable_cost_usd": null,
+    "fixed_platform_costs_included": false,
+    "components": [
+      {
+        "component": "ORION",
+        "type": "DETERMINISTIC_COMPUTE",
+        "provider": "LOCAL",
+        "model": null,
+        "api_calls": 0,
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "cost_usd": 0,
+        "cost_status": "NOT_APPLICABLE",
+        "pricing_status": "NOT_APPLICABLE"
+      },
+      {
+        "component": "ELARA",
+        "type": "LLM",
+        "provider": "OpenAI",
+        "model": "gpt-6-luna",
+        "api_calls": 1,
+        "input_tokens": 2201,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 2198,
+        "output_tokens": 247,
+        "total_tokens": 2448,
+        "cost_usd": null,
+        "cost_status": "CACHE_WRITE_TTL_UNAVAILABLE",
+        "pricing_status": "NOT_AVAILABLE"
+      },
+      {
+        "component": "SIENA",
+        "type": "MARKET_DATA",
+        "provider": "BANXICO",
+        "model": null,
+        "api_calls": 26,
+        "request_count": 26,
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "cost_usd": null,
+        "cost_status": "NOT_PRICED",
+        "pricing_status": "NOT_AVAILABLE"
+      },
+      {
+        "component": "NASH",
+        "type": "DETERMINISTIC_COMPUTE",
+        "provider": "LOCAL",
+        "model": null,
+        "api_calls": 0,
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "cost_usd": 0,
+        "cost_status": "NOT_APPLICABLE",
+        "pricing_status": "NOT_APPLICABLE"
+      },
+      {
+        "component": "ATENEA",
+        "type": "DETERMINISTIC_COMPUTE",
+        "provider": "LOCAL",
+        "model": null,
+        "api_calls": 0,
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "cost_usd": 0,
+        "cost_status": "NOT_APPLICABLE",
+        "pricing_status": "NOT_APPLICABLE"
+      }
+    ]
+  }
+}
