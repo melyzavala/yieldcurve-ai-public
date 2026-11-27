@@ -1,0 +1,1148 @@
+{
+  "public_schema_version": "1.0.0",
+  "case_id": "YC-TG177652694",
+  "version_caso": 1,
+  "version_curva": "CURVA-YC-TG177652694-V1-V1",
+  "fecha_corte": "2026-11-26",
+  "execution_mode": "LIVE",
+  "publication_status": "PUBLISHED",
+  "publication_authorized": true,
+  "published_at": "2026-11-27T04:48:12.762319+00:00",
+  "agentes": {
+    "elara": {
+      "estado": "ACEPTAR",
+      "decision": "ACEPTAR",
+      "datos_faltantes": []
+    },
+    "siena": {
+      "estado": "DATOS_VALIDOS"
+    },
+    "nash": {
+      "estado": "CALCULO_COMPLETADO"
+    },
+    "atenea": {
+      "estado": "DICTAMEN_TECNICO_VALIDADO"
+    }
+  },
+  "fuente": {
+    "source_mode": "BANXICO_SIE_LIVE"
+  },
+  "curva": {
+    "metodologia": "EXCEL_BOOTSTRAP_182D_V1",
+    "instrument_count": 10,
+    "max_absolute_repricing_error": 8.645443472232728e-9,
+    "pillars": [
+      {
+        "instrument_id": "C28",
+        "days": 28,
+        "spot_rate": 0.060884131182755305,
+        "observed_price": 9.952163,
+        "recalculated_price": 9.952163,
+        "iterations": 0,
+        "converged": true
+      },
+      {
+        "instrument_id": "C91",
+        "days": 91,
+        "spot_rate": 0.06370965457798286,
+        "observed_price": 9.839053,
+        "recalculated_price": 9.839053,
+        "iterations": 0,
+        "converged": true
+      },
+      {
+        "instrument_id": "C182",
+        "days": 182,
+        "spot_rate": 0.06540559734162163,
+        "observed_price": 9.674916,
+        "recalculated_price": 9.674916,
+        "iterations": 0,
+        "converged": true
+      },
+      {
+        "instrument_id": "C364",
+        "days": 350,
+        "spot_rate": 0.0676775742179971,
+        "observed_price": 9.372965,
+        "recalculated_price": 9.372965,
+        "iterations": 0,
+        "converged": true
+      },
+      {
+        "instrument_id": "C2Y",
+        "days": 672,
+        "spot_rate": 0.07576727135515414,
+        "observed_price": 8.740642,
+        "recalculated_price": 8.740642,
+        "iterations": 0,
+        "converged": true
+      },
+      {
+        "instrument_id": "MBONO_0_3",
+        "days": 1190,
+        "spot_rate": 0.08087695634458214,
+        "observed_price": 103.331797,
+        "recalculated_price": 103.33179700864544,
+        "iterations": 33,
+        "converged": true
+      },
+      {
+        "instrument_id": "MBONO_3_5",
+        "days": 1967,
+        "spot_rate": 0.0873327735462226,
+        "observed_price": 98.192189,
+        "recalculated_price": 98.19218900557391,
+        "iterations": 34,
+        "converged": true
+      },
+      {
+        "instrument_id": "MBONO_7_10",
+        "days": 3374,
+        "spot_rate": 0.09520220040576532,
+        "observed_price": 94.199492,
+        "recalculated_price": 94.19949199938168,
+        "iterations": 34,
+        "converged": true
+      },
+      {
+        "instrument_id": "MBONO_10_20",
+        "days": 5831,
+        "spot_rate": 0.10325295169604942,
+        "observed_price": 87.500282,
+        "recalculated_price": 87.50028200474983,
+        "iterations": 34,
+        "converged": true
+      },
+      {
+        "instrument_id": "MBONO_20_30",
+        "days": 10381,
+        "spot_rate": 0.10652065323665738,
+        "observed_price": 85.717829,
+        "recalculated_price": 85.71782899779637,
+        "iterations": 31,
+        "converged": true
+      }
+    ],
+    "curve_points": [
+      {
+        "days": 7,
+        "time_years": 0.019444444444444445,
+        "spot_rate": 0.06322980692950118,
+        "discount_factor": 0.998790505284081,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "OVERNIGHT",
+        "right_pillar": "C28",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "instrument_id": "C28",
+        "days": 28,
+        "time_years": 0.07777777777777778,
+        "spot_rate": 0.060884131182755305,
+        "discount_factor": 0.9953468444465073,
+        "point_type": "PILLAR"
+      },
+      {
+        "instrument_id": "C91",
+        "days": 91,
+        "time_years": 0.25277777777777777,
+        "spot_rate": 0.06370965457798286,
+        "discount_factor": 0.9842744861731983,
+        "point_type": "PILLAR"
+      },
+      {
+        "days": 98,
+        "time_years": 0.2722222222222222,
+        "spot_rate": 0.06384011171364738,
+        "discount_factor": 0.9830413028409095,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C91",
+        "right_pillar": "C182",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 147,
+        "time_years": 0.4083333333333333,
+        "spot_rate": 0.06475331166329902,
+        "discount_factor": 0.974318170950982,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C91",
+        "right_pillar": "C182",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "instrument_id": "C182",
+        "days": 182,
+        "time_years": 0.5055555555555555,
+        "spot_rate": 0.06540559734162163,
+        "discount_factor": 0.9679922116495939,
+        "point_type": "PILLAR"
+      },
+      {
+        "days": 189,
+        "time_years": 0.525,
+        "spot_rate": 0.06550026304480394,
+        "discount_factor": 0.9667353073358257,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C182",
+        "right_pillar": "C364",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 280,
+        "time_years": 0.7777777777777778,
+        "spot_rate": 0.06673091718617398,
+        "discount_factor": 0.950235391176272,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C182",
+        "right_pillar": "C364",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 329,
+        "time_years": 0.9138888888888889,
+        "spot_rate": 0.06739357710845016,
+        "discount_factor": 0.9412332889893027,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C182",
+        "right_pillar": "C364",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "instrument_id": "C364",
+        "days": 350,
+        "time_years": 0.9722222222222222,
+        "spot_rate": 0.0676775742179971,
+        "discount_factor": 0.9373513910422889,
+        "point_type": "PILLAR"
+      },
+      {
+        "days": 371,
+        "time_years": 1.0305555555555554,
+        "spot_rate": 0.06820516316172473,
+        "discount_factor": 0.9332291269765334,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C364",
+        "right_pillar": "C2Y",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 462,
+        "time_years": 1.2833333333333334,
+        "spot_rate": 0.07049138191787781,
+        "discount_factor": 0.9149468561703358,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C364",
+        "right_pillar": "C2Y",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 511,
+        "time_years": 1.4194444444444445,
+        "spot_rate": 0.07172242278657562,
+        "discount_factor": 0.9048340642836802,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C364",
+        "right_pillar": "C2Y",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 553,
+        "time_years": 1.5361111111111112,
+        "spot_rate": 0.07277760067403088,
+        "discount_factor": 0.8960250207255732,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C364",
+        "right_pillar": "C2Y",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 644,
+        "time_years": 1.788888888888889,
+        "spot_rate": 0.07506381943018396,
+        "discount_factor": 0.8765201330225832,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C364",
+        "right_pillar": "C2Y",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "instrument_id": "C2Y",
+        "days": 672,
+        "time_years": 1.8666666666666667,
+        "spot_rate": 0.07576727135515414,
+        "discount_factor": 0.8704101574025882,
+        "point_type": "PILLAR"
+      },
+      {
+        "days": 693,
+        "time_years": 1.925,
+        "spot_rate": 0.07597442074661744,
+        "discount_factor": 0.8663104253390422,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C2Y",
+        "right_pillar": "MBONO_0_3",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 735,
+        "time_years": 2.0416666666666665,
+        "spot_rate": 0.07638871952954403,
+        "discount_factor": 0.858108987893573,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C2Y",
+        "right_pillar": "MBONO_0_3",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 826,
+        "time_years": 2.2944444444444443,
+        "spot_rate": 0.07728636689255165,
+        "discount_factor": 0.8403367304941763,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C2Y",
+        "right_pillar": "MBONO_0_3",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 875,
+        "time_years": 2.4305555555555554,
+        "spot_rate": 0.07776971547263269,
+        "discount_factor": 0.8307699846922084,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C2Y",
+        "right_pillar": "MBONO_0_3",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 917,
+        "time_years": 2.547222222222222,
+        "spot_rate": 0.07818401425555928,
+        "discount_factor": 0.8225739317188467,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C2Y",
+        "right_pillar": "MBONO_0_3",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1008,
+        "time_years": 2.8,
+        "spot_rate": 0.07908166161856689,
+        "discount_factor": 0.8048359390786484,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C2Y",
+        "right_pillar": "MBONO_0_3",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1057,
+        "time_years": 2.936111111111111,
+        "spot_rate": 0.07956501019864792,
+        "discount_factor": 0.7953002502200381,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C2Y",
+        "right_pillar": "MBONO_0_3",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1099,
+        "time_years": 3.0527777777777776,
+        "spot_rate": 0.07997930898157452,
+        "discount_factor": 0.7871377250987395,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "C2Y",
+        "right_pillar": "MBONO_0_3",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "instrument_id": "MBONO_0_3",
+        "days": 1190,
+        "time_years": 3.3055555555555554,
+        "spot_rate": 0.08087695634458214,
+        "discount_factor": 0.769493869692843,
+        "point_type": "PILLAR"
+      },
+      {
+        "days": 1239,
+        "time_years": 3.441666666666667,
+        "spot_rate": 0.0812840799518928,
+        "discount_factor": 0.760212366280566,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1281,
+        "time_years": 3.558333333333333,
+        "spot_rate": 0.08163304304387337,
+        "discount_factor": 0.7522823639716172,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1372,
+        "time_years": 3.811111111111111,
+        "spot_rate": 0.08238912974316459,
+        "discount_factor": 0.7351865988205617,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1421,
+        "time_years": 3.9472222222222224,
+        "spot_rate": 0.08279625335047525,
+        "discount_factor": 0.7260326075756491,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1463,
+        "time_years": 4.063888888888889,
+        "spot_rate": 0.08314521644245582,
+        "discount_factor": 0.7182164631756653,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1554,
+        "time_years": 4.316666666666666,
+        "spot_rate": 0.08390130314174704,
+        "discount_factor": 0.7013814728879207,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1603,
+        "time_years": 4.4527777777777775,
+        "spot_rate": 0.0843084267490577,
+        "discount_factor": 0.6923756734902138,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1645,
+        "time_years": 4.569444444444445,
+        "spot_rate": 0.08465738984103827,
+        "discount_factor": 0.6846907657427456,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1736,
+        "time_years": 4.822222222222222,
+        "spot_rate": 0.08541347654032949,
+        "discount_factor": 0.6681530972965528,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1785,
+        "time_years": 4.958333333333333,
+        "spot_rate": 0.08582060014764015,
+        "discount_factor": 0.6593145368742223,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1827,
+        "time_years": 5.075,
+        "spot_rate": 0.08616956323962072,
+        "discount_factor": 0.6517768375191687,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 1918,
+        "time_years": 5.3277777777777775,
+        "spot_rate": 0.08692564993891194,
+        "discount_factor": 0.6355699682290414,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_0_3",
+        "right_pillar": "MBONO_3_5",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "instrument_id": "MBONO_3_5",
+        "days": 1967,
+        "time_years": 5.463888888888889,
+        "spot_rate": 0.0873327735462226,
+        "discount_factor": 0.6269160307877341,
+        "point_type": "PILLAR"
+      },
+      {
+        "days": 2009,
+        "time_years": 5.580555555555556,
+        "spot_rate": 0.08756768181068655,
+        "discount_factor": 0.6199177995349414,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 2100,
+        "time_years": 5.833333333333333,
+        "spot_rate": 0.08807664971702514,
+        "discount_factor": 0.6049131710382057,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 2191,
+        "time_years": 6.086111111111111,
+        "spot_rate": 0.08858561762336373,
+        "discount_factor": 0.5901267400161996,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 2282,
+        "time_years": 6.338888888888889,
+        "spot_rate": 0.08909458552970231,
+        "discount_factor": 0.5755603997298471,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 2373,
+        "time_years": 6.591666666666667,
+        "spot_rate": 0.0896035534360409,
+        "discount_factor": 0.5612158328543468,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 2464,
+        "time_years": 6.844444444444444,
+        "spot_rate": 0.09011252134237949,
+        "discount_factor": 0.5470945151670735,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 2555,
+        "time_years": 7.097222222222222,
+        "spot_rate": 0.09062148924871806,
+        "discount_factor": 0.5331977193960036,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 2646,
+        "time_years": 7.35,
+        "spot_rate": 0.09113045715505665,
+        "discount_factor": 0.519526519218795,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 2737,
+        "time_years": 7.602777777777778,
+        "spot_rate": 0.09163942506139523,
+        "discount_factor": 0.5060817934026507,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 2828,
+        "time_years": 7.855555555555555,
+        "spot_rate": 0.09214839296773382,
+        "discount_factor": 0.49286423007510416,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 2919,
+        "time_years": 8.108333333333333,
+        "spot_rate": 0.0926573608740724,
+        "discount_factor": 0.4798743311159363,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 3010,
+        "time_years": 8.36111111111111,
+        "spot_rate": 0.09316632878041099,
+        "discount_factor": 0.46711241666043324,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 3101,
+        "time_years": 8.613888888888889,
+        "spot_rate": 0.09367529668674957,
+        "discount_factor": 0.4545786297043252,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 3192,
+        "time_years": 8.866666666666667,
+        "spot_rate": 0.09418426459308815,
+        "discount_factor": 0.4422729408008028,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 3283,
+        "time_years": 9.119444444444444,
+        "spot_rate": 0.09469323249942674,
+        "discount_factor": 0.43019515284012677,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_3_5",
+        "right_pillar": "MBONO_7_10",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "instrument_id": "MBONO_7_10",
+        "days": 3374,
+        "time_years": 9.372222222222222,
+        "spot_rate": 0.09520220040576532,
+        "discount_factor": 0.41834490590246814,
+        "point_type": "PILLAR"
+      },
+      {
+        "days": 3465,
+        "time_years": 9.625,
+        "spot_rate": 0.09550037637947956,
+        "discount_factor": 0.4075095850498645,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 3647,
+        "time_years": 10.130555555555556,
+        "spot_rate": 0.096096728326908,
+        "discount_factor": 0.3865072851652615,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 3829,
+        "time_years": 10.636111111111111,
+        "spot_rate": 0.09669308027433646,
+        "discount_factor": 0.3663772700830328,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 4011,
+        "time_years": 11.141666666666667,
+        "spot_rate": 0.09728943222176491,
+        "discount_factor": 0.3470966722153631,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 4193,
+        "time_years": 11.647222222222222,
+        "spot_rate": 0.09788578416919336,
+        "discount_factor": 0.32864238527792,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 4375,
+        "time_years": 12.152777777777779,
+        "spot_rate": 0.09848213611662181,
+        "discount_factor": 0.31099112960290876,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 4557,
+        "time_years": 12.658333333333333,
+        "spot_rate": 0.09907848806405026,
+        "discount_factor": 0.2941195144240843,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 4739,
+        "time_years": 13.16388888888889,
+        "spot_rate": 0.09967484001147871,
+        "discount_factor": 0.2780040970860925,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 4921,
+        "time_years": 13.669444444444444,
+        "spot_rate": 0.10027119195890716,
+        "discount_factor": 0.2626214391453095,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 5103,
+        "time_years": 14.175,
+        "spot_rate": 0.10086754390633562,
+        "discount_factor": 0.24794815934351638,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 5285,
+        "time_years": 14.680555555555555,
+        "spot_rate": 0.10146389585376407,
+        "discount_factor": 0.23396098344925154,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 5467,
+        "time_years": 15.186111111111112,
+        "spot_rate": 0.10206024780119252,
+        "discount_factor": 0.22063679097436215,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 5649,
+        "time_years": 15.691666666666666,
+        "spot_rate": 0.10265659974862097,
+        "discount_factor": 0.20795265878524974,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_7_10",
+        "right_pillar": "MBONO_10_20",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "instrument_id": "MBONO_10_20",
+        "days": 5831,
+        "time_years": 16.197222222222223,
+        "spot_rate": 0.10325295169604942,
+        "discount_factor": 0.19588590163953,
+        "point_type": "PILLAR"
+      },
+      {
+        "days": 6013,
+        "time_years": 16.70277777777778,
+        "spot_rate": 0.10338365975767375,
+        "discount_factor": 0.18578205382051421,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 6195,
+        "time_years": 17.208333333333332,
+        "spot_rate": 0.10351436781929806,
+        "discount_factor": 0.1761772596230903,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 6377,
+        "time_years": 17.71388888888889,
+        "spot_rate": 0.10364507588092238,
+        "discount_factor": 0.16704806801422112,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 6559,
+        "time_years": 18.219444444444445,
+        "spot_rate": 0.10377578394254669,
+        "discount_factor": 0.15837206708348905,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 6741,
+        "time_years": 18.725,
+        "spot_rate": 0.10390649200417101,
+        "discount_factor": 0.15012784118306782,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 6923,
+        "time_years": 19.230555555555554,
+        "spot_rate": 0.10403720006579534,
+        "discount_factor": 0.142294929680086,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 7105,
+        "time_years": 19.73611111111111,
+        "spot_rate": 0.10416790812741965,
+        "discount_factor": 0.13485378726804015,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 7287,
+        "time_years": 20.241666666666667,
+        "spot_rate": 0.10429861618904397,
+        "discount_factor": 0.1277857457853455,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 7469,
+        "time_years": 20.747222222222224,
+        "spot_rate": 0.10442932425066828,
+        "discount_factor": 0.12107297749052029,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 7651,
+        "time_years": 21.252777777777776,
+        "spot_rate": 0.1045600323122926,
+        "discount_factor": 0.1146984597448838,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 7833,
+        "time_years": 21.758333333333333,
+        "spot_rate": 0.10469074037391693,
+        "discount_factor": 0.10864594105500731,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 8015,
+        "time_years": 22.26388888888889,
+        "spot_rate": 0.10482144843554124,
+        "discount_factor": 0.10289990842849449,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 8197,
+        "time_years": 22.769444444444446,
+        "spot_rate": 0.10495215649716556,
+        "discount_factor": 0.09744555599797762,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 8379,
+        "time_years": 23.275,
+        "spot_rate": 0.10508286455878987,
+        "discount_factor": 0.0922687548695041,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 8561,
+        "time_years": 23.780555555555555,
+        "spot_rate": 0.1052135726204142,
+        "discount_factor": 0.08735602415274896,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 8743,
+        "time_years": 24.28611111111111,
+        "spot_rate": 0.10534428068203852,
+        "discount_factor": 0.08269450313172674,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 8925,
+        "time_years": 24.791666666666668,
+        "spot_rate": 0.10547498874366283,
+        "discount_factor": 0.07827192453588785,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 9107,
+        "time_years": 25.29722222222222,
+        "spot_rate": 0.10560569680528716,
+        "discount_factor": 0.07407658887267723,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 9289,
+        "time_years": 25.802777777777777,
+        "spot_rate": 0.10573640486691147,
+        "discount_factor": 0.07009733978377905,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 9471,
+        "time_years": 26.308333333333334,
+        "spot_rate": 0.10586711292853579,
+        "discount_factor": 0.06632354038843734,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 9653,
+        "time_years": 26.81388888888889,
+        "spot_rate": 0.10599782099016011,
+        "discount_factor": 0.06274505057832656,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 9835,
+        "time_years": 27.319444444444443,
+        "spot_rate": 0.10612852905178442,
+        "discount_factor": 0.059352205229551876,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 10017,
+        "time_years": 27.825,
+        "spot_rate": 0.10625923711340875,
+        "discount_factor": 0.05613579329841631,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "days": 10199,
+        "time_years": 28.330555555555556,
+        "spot_rate": 0.10638994517503306,
+        "discount_factor": 0.053087037768632515,
+        "point_type": "INTERPOLATED",
+        "left_pillar": "MBONO_10_20",
+        "right_pillar": "MBONO_20_30",
+        "source_method": "LINEAR_SPOT_RATE"
+      },
+      {
+        "instrument_id": "MBONO_20_30",
+        "days": 10381,
+        "time_years": 28.836111111111112,
+        "spot_rate": 0.10652065323665738,
+        "discount_factor": 0.050197576418671196,
+        "point_type": "PILLAR"
+      }
+    ]
+  },
+  "auditoria": {
+    "tecnicamente_valida": true,
+    "tolerancia": 1e-8,
+    "requiere_aprobacion_humana": true,
+    "lectura_curva": {
+      "forma": "ASCENDENTE",
+      "pendiente_corto_largo_bp": 456.4,
+      "descripcion": "La curva presenta una estructura ascendente: las tasas spot aumentan de forma general conforme se extiende el plazo.",
+      "implicacion_valuacion_riesgo": "La curva cuenta con evidencia técnica suficiente para utilizarse como insumo del ejercicio de valuación y sensibilidad del portafolio ficticio. La estructura por plazo debe conservarse al descontar flujos.",
+      "es_prediccion": false,
+      "es_recomendacion": false
+    }
+  },
+  "costos": {
+    "currency": "USD",
+    "pricing_status": "PARTIAL",
+    "known_cost_usd": 0.00036655,
+    "cost_completeness": "PARTIAL",
+    "total_variable_cost_usd": null,
+    "fixed_platform_costs_included": false,
+    "total_llm_calls": 1,
+    "total_input_tokens": 2201,
+    "total_output_tokens": 183,
+    "total_tokens": 2384,
+    "components": [
+      {
+        "component": "ORION",
+        "type": "DETERMINISTIC_COMPUTE",
+        "provider": "LOCAL",
+        "model": null,
+        "api_calls": 0,
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "cost_usd": 0,
+        "cost_status": "NOT_APPLICABLE",
+        "pricing_status": "NOT_APPLICABLE"
+      },
+      {
+        "component": "ELARA",
+        "type": "LLM",
+        "provider": "OpenAI",
+        "model": "gpt-6-luna",
+        "api_calls": 1,
+        "input_tokens": 2201,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 2198,
+        "output_tokens": 183,
+        "total_tokens": 2384,
+        "cost_usd": 0.00036655,
+        "cost_status": "ESTIMATED_FROM_VERIFIED_RATE",
+        "pricing_status": "AVAILABLE",
+        "pricing_effective_date": "2026-11-24"
+      },
+      {
+        "component": "SIENA",
+        "type": "MARKET_DATA",
+        "provider": "BANXICO",
+        "model": null,
+        "api_calls": 26,
+        "request_count": 26,
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "cost_usd": null,
+        "cost_status": "NOT_PRICED",
+        "pricing_status": "NOT_AVAILABLE"
+      },
+      {
+        "component": "NASH",
+        "type": "DETERMINISTIC_COMPUTE",
+        "provider": "LOCAL",
+        "model": null,
+        "api_calls": 0,
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "cost_usd": 0,
+        "cost_status": "NOT_APPLICABLE",
+        "pricing_status": "NOT_APPLICABLE"
+      },
+      {
+        "component": "ATENEA",
+        "type": "DETERMINISTIC_COMPUTE",
+        "provider": "LOCAL",
+        "model": null,
+        "api_calls": 0,
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "cost_usd": 0,
+        "cost_status": "NOT_APPLICABLE",
+        "pricing_status": "NOT_APPLICABLE"
+      }
+    ]
+  },
+  "indicadores": {
+    "mape_repricing_pct": null,
+    "technical_valid_curves_pct": null,
+    "technical_processing_minutes": null
+  }
+}
