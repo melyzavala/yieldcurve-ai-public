@@ -128,3 +128,15 @@ def test_audit_reading_is_excluded_from_generic_facts_and_micro_costs_keep_preci
  result=subprocess.run(["node","-e",usd_source+"console.log(JSON.stringify([usd(0),usd(0.00036505),usd(0.005),usd(0.01),usd(1.25)]))"],check=True,capture_output=True,text=True)
  assert json.loads(result.stdout)==["$0.00","$0.000365","$0.005","$0.01","$1.25"]
  assert "Pricing parcial · existen componentes no tarifados" in js and "No tarifado" in js
+
+def test_public_kpi_derivations_use_only_published_evidence():
+ source=build();js=(source/'app.js').read_text(encoding='utf-8');logic=js[:js.index('let cases=')]
+ live=json.loads((ROOT/'data/public/cases/YC-TG177652694.json').read_text(encoding='utf-8'))
+ script=logic+"\nconst sample={curva:{pillars:[{observed_price:100,recalculated_price:99},{observed_price:200,recalculated_price:202},{observed_price:0,recalculated_price:1},{observed_price:100}]}};const rateCases=[{auditoria:{tecnicamente_valida:true}},{auditoria:{tecnicamente_valida:true}},{auditoria:{tecnicamente_valida:true}},{auditoria:{tecnicamente_valida:false}},{auditoria:{}}];console.log(JSON.stringify({sample:deriveMapeRepricing(sample),empty:deriveMapeRepricing({curva:{pillars:[]}}),live:deriveMapeRepricing("+json.dumps(live)+"),full:deriveTechnicalValidityRate(rateCases.slice(0,3)),mixed:deriveTechnicalValidityRate(rateCases),none:deriveTechnicalValidityRate([{auditoria:{}}]),formatted:[percent(2.269876687e-9),percent(.0000345),percent(.125),percent(1.25)]}));"
+ result=subprocess.run(["node","-e",script],check=True,capture_output=True,text=True);data=json.loads(result.stdout)
+ assert data["sample"]=={"value":1,"instruments":2} and data["empty"] is None
+ assert data["live"]["instruments"]==10 and data["live"]["value"]>0 and data["formatted"]==["0.0000000023%","0.0000345%","0.125%","1.25%"]
+ assert data["full"]=={"value":100,"valid":3,"evaluated":3} and data["mixed"]=={"value":75,"valid":3,"evaluated":4} and data["none"] is None
+ assert "Evidencia derivada de ${derivedMape.instruments} instrumentos publicados" in js and "Evidencia insuficiente" in js
+ assert "technical_processing_minutes" in js and "timestamps suficientes" in js
+ assert "Number.isFinite(processing)?`${number(processing)} min`:'—'" in js

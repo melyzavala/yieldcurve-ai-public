@@ -5,6 +5,7 @@ on:
     branches:
       - dashboard-final-polish
       - dashboard-final-display-fix
+      - dashboard-kpi-public-derivation
 
 permissions:
   contents: read
